@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shanavas V Basheer - 3D Portfolio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            overflow: hidden;
+            color: #fff;
+            background-color: #111;
+        }
+        
+        #scene-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .content {
+            position: absolute;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        .content.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .card {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+            pointer-events: all;
+        }
+        
+        .nav-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .nav-btn.active {
+            background-color: #4a90e2;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #4a90e2;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin: 20px 0 10px;
+            color: #4a90e2;
+        }
+        
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-link {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .skill {
+            background-color: rgba(74, 144, 226, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .projects {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .project {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .project:hover {
+            transform: translateY(-5px);
+        }
+        
+        .education-item, .achievement-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease;
+        }
+        
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #4a90e2;
+            animation: spin 1s infinite linear;
+        }
+        
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .language {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 10px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+    </div>
+    
+    <div id="scene-container"></div>
+    
+    <div class="nav">
+        <button class="nav-btn active" data-section="home">Home</button>
+        <button class="nav-btn" data-section="about">About</button>
+        <button class="nav-btn" data-section="skills">Skills</button>
+        <button class="nav-btn" data-section="projects">Projects</button>
+        <button class="nav-btn" data-section="education">Education</button>
+        <button class="nav-btn" data-section="contact">Contact</button>
+    </div>
+    
+    <div id="home" class="content active">
+        <div class="card">
+            <h1>Shanavas V Basheer</h1>
+            <p>Full Stack Developer | Android Developer</p>
+            <p>Passionate about locating and evaluating problems to find solutions. Consistently committed to explore new opportunities to develop new skills. Eager to learn more.</p>
+            
+            <div class="social-links">
+                <a href="https://www.linkedin.com/in/shanavas-v-basheer-429a0329a" class="social-link" target="_blank">LinkedIn</a>
+                <a href="https://github.com/shanavasvb" class="social-link" target="_blank">GitHub</a>
+                <a href="mailto:shanavasvbasheer@gmail.com" class="social-link">Email</a>
+            </div>
+        </div>
+    </div>
+    
+    <div id="about" class="content">
+        <div class="card">
+            <h1>About Me</h1>
+            <p>I am a passionate software developer with expertise in MERN stack and web development. I recently completed my BSc in Computer Science from Union Christian College and am currently pursuing my postgraduate degree in Software Application Development.</p>
+            <p>I enjoy solving complex problems and creating efficient, user-friendly applications. My experience includes frontend development, creating responsive websites, and developing full-stack applications.</p>
+            <h2>Languages</h2>
+            <div>
+                <span class="language">• English</span>
+                <span class="language">• Malayalam</span>
+                <span class="language">• Arabi</span>
+                <span class="language">• Hindi</span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="skills" class="content">
+        <div class="card">
+            <h1>Skills</h1>
+            <div class="skills">
+                <span class="skill">C</span>
+                <span class="skill">C++</span>
+                <span class="skill">HTML</span>
+                <span class="skill">CSS</span>
+                <span class="skill">JavaScript</span>
+                <span class="skill">SQL</span>
+                <span class="skill">PHP</span>
+                <span class="skill">Java</span>
+                <span class="skill">Android-XML</span>
+                <span class="skill">MS Office</span>
+                <span class="skill">MERN Stack</span>
+                <span class="skill">MongoDB</span>
+                <span class="skill">Express</span>
+                <span class="skill">React</span>
+                <span class="skill">Node.js</span>
+                <span class="skill">Responsive Web Design</span>
+            </div>
+            
+            <h2>Certifications</h2>
+            <ul>
+                <li>Responsive web design (certified by freecodecam.org)</li>
+                <li>Javascript algorithms and data structure by freecodecam.org</li>
+                <li>TCS iON Career Edge - Young Professional Course</li>
+                <li>Hp-Life Introduction to Agile Methodologies</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div id="projects" class="content">
+        <div class="card">
+            <h1>Projects</h1>
+            
+            <div class="projects">
+                <div class="project">
+                    <h3>HomeServer Frontend</h3>
+                    <p>A Google Drive-like frontend for a client's personal file storage solution.</p>
+                    <p><strong>Tech Stack:</strong> MERN (MongoDB, Express, React, Node.js)</p>
+                    <p>Features included file upload/download, folder navigation, and user authentication.</p>
+                </div>
+                
+                <div class="project">
+                    <h3>E-commerce Mobile Application</h3>
+                    <p>Developed an Amazon-like e-commerce platform where users can login, browse products, add to cart, and checkout.</p>
+                    <p><strong>Tech Stack:</strong> Kotlin, Firebase, Android SDK</p>
+                    <p>Features include user authentication, product catalog, shopping cart functionality, and order processing with real-time data syncing.</p>
+                      </div>    </div></div></div>      
+    
+    <div id="education" class="content">
+        <div class="card">
+            <h1>Education</h1>
+            
+            <div class="education-item">
+                <h3>Postgraduate Degree</h3>
+                <p>MVoc Software Application Development</p>
+                <p>Cusat | 2024-2026</p>
+            </div>
+            
+            <div class="education-item">
+                <h3>Undergraduate Degree</h3>
+                <p>BSC Computer Science</p>
+                <p>Union Christian College | 2021-2024</p>
+            </div>
+            
+            <div class="education-item">
+                <h3>Higher Secondary School</h3>
+                <p>Government Higher Secondary School N.paravoor | 2018-2021</p>
+            </div>
+            
+            <h2>Achievements</h2>
+            
+            <div class="achievement-item">
+                <p>• Participated in hands-on workshop on AI/ML conducted by Foss United.</p>
+            </div>
+            
+            <div class="achievement-item">
+                <p>• Conducted a Techfest in UC college Aluva.</p>
+            </div>
+            
+            <div class="achievement-item">
+                <p>• Attended a session on Virtual and Augmented reality conducted by Innovation and Entrepreneurship Development Centre(IEDC).</p>
+            </div>
+            
+            <div class="achievement-item">
+                <p>• Secured first prize in coding competition conducted by RAJAGIRI Kalamassery.</p>
+            </div>
+            
+            <div class="achievement-item">
+                <p>• First prize in typing challenge conducted by μLearn in UC college Chapter.</p>
+            </div>
+            
+            <div class="achievement-item">
+                <p>• Submitted an idea in YIP(Young Innovators Programme) and Selected in District-Level.</p>
+            </div>
+            
+            <div class="achievement-item">
+                <p>• Participated a bootcamp based on software conducted by Kerala Knowledge Economy Mission(KKEM).</p>
+            </div>
+            
+            <div class="achievement-item">
+                <p>• Attended Seasides -2025,Cocoon(2024) conferences related to cybersecurity.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="contact" class="content">
+        <div class="card">
+            <h1>Contact Me</h1>
+            <p>Feel free to reach out to me through any of these channels:</p>
+            
+            <div style="margin-top: 20px;">
+                <p><strong>Email:</strong> <a href="mailto:shanavasvbasheer@gmail.com" style="color: #4a90e2; text-decoration: none;">shanavasvbasheer@gmail.com</a></p>
+                <p><strong>Phone:</strong> +918547956158</p>
+                <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/shanavas-v-basheer-429a0329a" style="color: #4a90e2; text-decoration: none;" target="_blank">Shanavas V Basheer</a></p>
+                <p><strong>GitHub:</strong> <a href="https://github.com/shanavasvb" style="color: #4a90e2; text-decoration: none;" target="_blank">github.com/shanavasvb</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Three.js scene
+        let scene, camera, renderer, particles, raycaster, mouse;
+        let INTERSECTED;
+        const sections = ['home', 'about', 'skills', 'projects', 'education', 'contact'];
+        let currentSection = 'home';
+        let cameraTargetPosition = { x: 0, y: 0, z: 15 };
+        let particleGroups = {};
+        
+        function init() {
+            // Create scene
+            scene = new THREE.Scene();
+            
+            // Create camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 15;
+            
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('scene-container').appendChild(renderer.domElement);
+            
+            // Initialize raycaster for mouse interaction
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            
+            // Create particle systems for each section
+            createParticleSystems();
+            
+            // Add window resize listener
+            window.addEventListener('resize', onWindowResize);
+            
+            // Add mouse move listener
+            window.addEventListener('mousemove', onMouseMove);
+            
+            // Add event listeners to navigation buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const section = btn.getAttribute('data-section');
+                    changeSection(section);
+                });
+            });
+            
+            // Start animation loop
+            animate();
+            
+            // Hide loader after initialization
+            setTimeout(() => {
+                document.querySelector('.loader').classList.add('hidden');
+            }, 1500);
+        }
+        
+        function createParticleSystems() {
+            // Create different particle system for each section
+            
+            // Home - Blue particles in spiral pattern
+            particleGroups.home = createParticleGroup(2000, 0x4a90e2, 0.8, createSpiralPositions);
+            scene.add(particleGroups.home);
+            
+            // About - Green particles in sphere
+            particleGroups.about = createParticleGroup(1500, 0x42b883, 0.8, createSpherePositions);
+            particleGroups.about.visible = false;
+            scene.add(particleGroups.about);
+            
+            // Skills - Orange particles in grid
+            particleGroups.skills = createParticleGroup(1800, 0xff7e5f, 0.8, createGridPositions);
+            particleGroups.skills.visible = false;
+            scene.add(particleGroups.skills);
+            
+            // Projects - Purple particles in double helix
+            particleGroups.projects = createParticleGroup(1600, 0x9c27b0, 0.8, createHelixPositions);
+            particleGroups.projects.visible = false;
+            scene.add(particleGroups.projects);
+            
+            // Education - Yellow particles in wave pattern
+            particleGroups.education = createParticleGroup(1700, 0xffca28, 0.8, createWavePositions);
+            particleGroups.education.visible = false;
+            scene.add(particleGroups.education);
+            
+            // Contact - Red particles in circular pattern
+            particleGroups.contact = createParticleGroup(1400, 0xff5252, 0.8, createCircularPositions);
+            particleGroups.contact.visible = false;
+            scene.add(particleGroups.contact);
+        }
+        
+        function createParticleGroup(count, color, opacity, positionFunction) {
+            const particles = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+            const sizes = new Float32Array(count);
+            
+            const colorObj = new THREE.Color(color);
+            
+            for (let i = 0; i < count; i++) {
+                const i3 = i * 3;
+                const position = positionFunction(i, count);
+                
+                positions[i3] = position.x;
+                positions[i3 + 1] = position.y;
+                positions[i3 + 2] = position.z;
+                
+                colors[i3] = colorObj.r;
+                colors[i3 + 1] = colorObj.g;
+                colors[i3 + 2] = colorObj.b;
+                
+                sizes[i] = Math.random() * 0.1 + 0.05;
+            }
+            
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            particles.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            const material = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                opacity: opacity,
+                transparent: true,
+                depthWrite: false,
+                sizeAttenuation: true
+            });
+            
+            return new THREE.Points(particles, material);
+        }
+        
+        // Different position patterns for particles
+        function createSpiralPositions(i, total) {
+            const t = i / total * Math.PI * 20;
+            const radius = 10 * Math.sin(t * 0.25);
+            return {
+                x: Math.cos(t) * radius,
+                y: Math.sin(t) * radius,
+                z: (i / total) * 20 - 10
+            };
+        }
+        
+        function createSpherePositions(i, total) {
+            const phi = Math.acos(-1 + (2 * i) / total);
+            const theta = Math.sqrt(total * Math.PI) * phi;
+            const radius = 8;
+            
+            return {
+                x: radius * Math.cos(theta) * Math.sin(phi),
+                y: radius * Math.sin(theta) * Math.sin(phi),
+                z: radius * Math.cos(phi)
+            };
+        }
+        
+        function createGridPositions(i, total) {
+            const size = Math.cbrt(total);
+            const x = (i % size) - size/2;
+            const y = (Math.floor(i / size) % size) - size/2;
+            const z = (Math.floor(i / (size * size))) - size/2;
+            
+            return {
+                x: x * 20 / size,
+                y: y * 20 / size,
+                z: z * 20 / size
+            };
+        }
+        
+        function createHelixPositions(i, total) {
+            const helixCount = 2;
+            const helixIndex = i % helixCount;
+            const angle = (i / total) * Math.PI * 20;
+            const radius = 8;
+            const heightScale = 20;
+            const heightOffset = (i / total) * heightScale - heightScale/2;
+            
+            return {
+                x: Math.cos(angle + helixIndex * Math.PI) * radius,
+                y: heightOffset,
+                z: Math.sin(angle + helixIndex * Math.PI) * radius
+            };
+        }
+        
+        function createWavePositions(i, total) {
+            const width = Math.sqrt(total);
+            const height = Math.sqrt(total);
+            
+            const x = (i % width) - width / 2;
+            const z = Math.floor(i / width) - height / 2;
+            
+            const xScale = 20 / width;
+            const zScale = 20 / height;
+            
+            return {
+                x: x * xScale,
+                y: Math.sin(x * 0.5) * Math.cos(z * 0.5) * 3,
+                z: z * zScale
+            };
+        }
+        
+        function createCircularPositions(i, total) {
+            const rings = 20;
+            const ringIndex = Math.floor(i / (total / rings));
+            const segmentIndex = i % Math.floor(total / rings);
+            const segments = Math.floor(total / rings);
+            
+            const radius = ringIndex * 0.5;
+            const angle = (segmentIndex / segments) * Math.PI * 2;
+            
+            return {
+                x: Math.cos(angle) * radius,
+                y: Math.sin(angle) * radius,
+                z: (ringIndex - rings/2) * 0.5
+            };
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function onMouseMove(event) {
+            // Convert mouse position to normalized device coordinates
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            // Add subtle camera movement based on mouse position
+            cameraTargetPosition.x = mouse.x * 2;
+            cameraTargetPosition.y = mouse.y * 2;
+        }
+        
+        function changeSection(section) {
+            // Hide all contents
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            // Show selected content
+            document.getElementById(section).classList.add('active');
+            
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-section') === section) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Hide all particle systems
+            for (const key in particleGroups) {
+                particleGroups[key].visible = false;
+            }
+            
+            // Show the one for the current section
+            particleGroups[section].visible = true;
+            
+            // Set current section
+            currentSection = section;
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Slowly move camera toward target position
+            camera.position.x += (cameraTargetPosition.x - camera.position.x) * 0.05;
+            camera.position.y += (cameraTargetPosition.y - camera.position.y) * 0.05;
+            camera.position.z += (cameraTargetPosition.z - camera.position.z) * 0.05;
+            
+            camera.lookAt(scene.position);
+            
+            // Animate particles
+            for (const key in particleGroups) {
+                if (particleGroups[key].visible) {
+                    const positions = particleGroups[key].geometry.attributes.position.array;
+                    const count = positions.length / 3;
+                    
+                    for (let i = 0; i < count; i++) {
+                        const i3 = i * 3;
+                        
+                        // Apply subtle movement to particles
+                        positions[i3] += Math.sin(Date.now() * 0.001 + i * 0.1) * 0.01;
+                        positions[i3 + 1] += Math.cos(Date.now() * 0.001 + i * 0.1) * 0.01;
+                        positions[i3 + 2] += Math.sin(Date.now() * 0.002 + i * 0.1) * 0.01;
+                    }
+                    
+                    particleGroups[key].geometry.attributes.position.needsUpdate = true;
+                    particleGroups[key].rotation.y += 0.001;
+                }
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+            window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
