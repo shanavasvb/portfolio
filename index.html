@@ -8,6 +8,48 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary: #f9f9f9;
+            --bg-secondary: rgba(255, 255, 255, 0.9);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-tertiary: #888;
+            --text-light: #555;
+            --border-color: rgba(74, 144, 226, 0.2);
+            --border-hover: rgba(74, 144, 226, 0.8);
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --card-shadow-hover: rgba(0, 0, 0, 0.15);
+            --nav-bg: rgba(255, 255, 255, 0.8);
+            --input-bg: rgba(255, 255, 255, 0.5);
+            --skill-bg: linear-gradient(45deg, rgba(74, 144, 226, 0.2), rgba(66, 184, 131, 0.2));
+            --skill-bg-hover: linear-gradient(45deg, rgba(74, 144, 226, 0.3), rgba(66, 184, 131, 0.3));
+            --scrollbar-track: rgba(0, 0, 0, 0.05);
+            --language-bg: rgba(255, 255, 255, 0.5);
+            --language-bg-hover: rgba(74, 144, 226, 0.2);
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme variables */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: rgba(40, 40, 40, 0.9);
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #888;
+            --text-light: #c0c0c0;
+            --border-color: rgba(74, 144, 226, 0.3);
+            --border-hover: rgba(74, 144, 226, 0.7);
+            --card-shadow: rgba(0, 0, 0, 0.3);
+            --card-shadow-hover: rgba(0, 0, 0, 0.4);
+            --nav-bg: rgba(40, 40, 40, 0.8);
+            --input-bg: rgba(60, 60, 60, 0.5);
+            --skill-bg: linear-gradient(45deg, rgba(74, 144, 226, 0.3), rgba(66, 184, 131, 0.3));
+            --skill-bg-hover: linear-gradient(45deg, rgba(74, 144, 226, 0.4), rgba(66, 184, 131, 0.4));
+            --scrollbar-track: rgba(255, 255, 255, 0.1);
+            --language-bg: rgba(60, 60, 60, 0.5);
+            --language-bg-hover: rgba(74, 144, 226, 0.3);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,9 +58,10 @@
         }
 
         body {
-            color: #333;
-            background-color: #f9f9f9;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
             overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
         #canvas-container {
@@ -60,6 +103,7 @@
             position: relative;
             display: inline-block;
             animation: fadeIn 0.8s ease both;
+            color: var(--text-primary);
         }
 
         h2::after {
@@ -79,10 +123,15 @@
             transform: scaleX(1);
         }
 
+        h3 {
+            color: var(--text-primary);
+        }
+
         p {
             line-height: 1.7;
             margin-bottom: 1.5rem;
             font-size: 1.1rem;
+            color: var(--text-primary);
         }
 
         .tagline {
@@ -91,6 +140,7 @@
             max-width: 700px;
             margin: 0 auto 40px;
             animation: fadeIn 1s 0.3s ease both;
+            color: var(--text-primary);
         }
 
         .section {
@@ -112,11 +162,11 @@
         }
 
         .card {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: var(--bg-secondary);
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px var(--card-shadow);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             height: 100%;
             transform: perspective(1000px) rotateY(5deg);
@@ -125,8 +175,16 @@
 
         .card:hover {
             transform: perspective(1000px) rotateY(0deg) translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 15px 40px var(--card-shadow-hover);
             opacity: 1;
+        }
+
+        .card h3 {
+            color: var(--text-primary);
+        }
+
+        .card p {
+            color: var(--text-primary);
         }
 
         .skills-grid {
@@ -136,18 +194,19 @@
         }
 
         .skill-tag {
-            background: linear-gradient(45deg, rgba(74, 144, 226, 0.2), rgba(66, 184, 131, 0.2));
+            background: var(--skill-bg);
             padding: 8px 16px;
             border-radius: 50px;
             font-size: 0.9rem;
             font-weight: 500;
             transition: all 0.3s ease;
             transform: scale(1);
+            color: var(--text-primary);
         }
 
         .skill-tag:hover {
             transform: scale(1.05);
-            background: linear-gradient(45deg, rgba(74, 144, 226, 0.3), rgba(66, 184, 131, 0.3));
+            background: var(--skill-bg-hover);
         }
 
         .education-item,
@@ -155,14 +214,14 @@
         .experience-item {
             margin-bottom: 30px;
             padding-left: 20px;
-            border-left: 2px solid rgba(74, 144, 226, 0.2);
+            border-left: 2px solid var(--border-color);
             transition: all 0.4s ease;
         }
 
         .education-item:hover,
         .achievement-item:hover,
         .experience-item:hover {
-            border-left-color: rgba(74, 144, 226, 0.8);
+            border-left-color: var(--border-hover);
             padding-left: 25px;
         }
 
@@ -179,25 +238,26 @@
             font-weight: 600;
             font-size: 1.2rem;
             margin-bottom: 0.4rem;
+            color: var(--text-primary);
         }
 
         .education-subtitle,
         .experience-subtitle {
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 0.4rem;
         }
 
         .education-period,
         .experience-period {
             font-size: 0.9rem;
-            color: #888;
+            color: var(--text-tertiary);
             margin-bottom: 0.8rem;
         }
 
         .experience-description {
             font-size: 1rem;
             line-height: 1.6;
-            color: #555;
+            color: var(--text-light);
         }
 
         .experience-highlights {
@@ -209,6 +269,7 @@
             margin-bottom: 8px;
             font-size: 0.95rem;
             line-height: 1.5;
+            color: var(--text-light);
         }
 
         .tech-stack {
@@ -224,7 +285,7 @@
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .social-links {
@@ -235,20 +296,20 @@
         }
 
         .social-link {
-            color: #333;
+            color: var(--text-primary);
             text-decoration: none;
             padding: 12px 24px;
             border-radius: 50px;
             font-weight: 500;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: rgba(255, 255, 255, 0.5);
+            background: var(--bg-secondary);
             backdrop-filter: blur(10px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px var(--card-shadow);
             transform: translateY(0);
         }
 
         .social-link:hover {
-            background: linear-gradient(45deg, rgba(74, 144, 226, 0.2), rgba(66, 184, 131, 0.2));
+            background: var(--skill-bg);
             transform: translateY(-5px);
         }
 
@@ -264,10 +325,16 @@
             margin-bottom: 20px;
             border: none;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.5);
+            background: var(--input-bg);
             backdrop-filter: blur(10px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--text-secondary);
         }
 
         input:focus,
@@ -321,18 +388,18 @@
             bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.8);
+            background: var(--nav-bg);
             backdrop-filter: blur(10px);
             border-radius: 50px;
             padding: 15px 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px var(--card-shadow);
             z-index: 100;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         nav:hover {
             transform: translateX(-50%) translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 15px 40px var(--card-shadow-hover);
         }
 
         .nav-links {
@@ -342,7 +409,7 @@
 
         .nav-link {
             text-decoration: none;
-            color: #333;
+            color: var(--text-primary);
             font-weight: 500;
             position: relative;
             padding: 5px 0;
@@ -373,16 +440,89 @@
         }
 
         .language {
-            background: rgba(255, 255, 255, 0.5);
+            background: var(--language-bg);
             padding: 8px 16px;
             border-radius: 50px;
             font-size: 0.9rem;
             transition: all 0.3s ease;
+            color: var(--text-primary);
         }
 
         .language:hover {
-            background: rgba(74, 144, 226, 0.2);
+            background: var(--language-bg-hover);
             transform: translateY(-2px);
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--bg-secondary);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px var(--card-shadow);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px var(--card-shadow-hover);
+        }
+
+        .theme-toggle .icon {
+            transition: all 0.4s ease;
+        }
+
+        [data-theme="dark"] .theme-toggle .sun-icon {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        [data-theme="dark"] .theme-toggle .moon-icon {
+            opacity: 0;
+            transform: rotate(180deg);
+        }
+
+        [data-theme="light"] .theme-toggle .sun-icon,
+        .theme-toggle .sun-icon {
+            opacity: 0;
+            transform: rotate(-180deg);
+        }
+
+        [data-theme="light"] .theme-toggle .moon-icon,
+        .theme-toggle .moon-icon {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        /* Achievement items styling */
+        .achievement-item p {
+            color: var(--text-light);
+        }
+
+        /* List styling for dark mode */
+        ul li {
+            color: var(--text-light);
+        }
+
+        /* Contact links styling */
+        .contact-form+div p {
+            color: var(--text-primary);
+        }
+
+        .contact-form+div a {
+            color: #4a90e2;
+            text-decoration: none;
         }
 
         /* Floating animation for header elements */
@@ -429,7 +569,7 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
+            background: var(--scrollbar-track);
         }
 
         ::-webkit-scrollbar-thumb {
@@ -462,11 +602,24 @@
             .card {
                 transform: perspective(1000px) rotateY(0deg);
             }
+
+            .theme-toggle {
+                top: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
 
-<body>
+<body data-theme="light">
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <span class="icon sun-icon">☀️</span>
+        <span class="icon moon-icon">🌙</span>
+    </button>
+
     <div id="canvas-container"></div>
 
     <div class="container">
@@ -675,6 +828,27 @@
     </nav>
 
     <script>
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Update particle colors based on theme
+            updateParticleColors(newTheme);
+        }
+
+        // Load saved theme on page load
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        }
+
+        // Call loadTheme on page load
+        document.addEventListener('DOMContentLoaded', loadTheme);
+
         // Initialize Three.js scene
         let scene, camera, renderer, particles;
         let mouseX = 0, mouseY = 0;
@@ -726,12 +900,21 @@
                 // Random size for particles
                 sizes.push(Math.random() * 4 + 1);
 
-                // Random color for particles (blue/green spectrum)
-                colors.push(
-                    0.2 + Math.random() * 0.3, // R
-                    0.5 + Math.random() * 0.4, // G
-                    0.7 + Math.random() * 0.3  // B
-                );
+                // Random color for particles based on current theme
+                const currentTheme = document.body.getAttribute('data-theme') || 'light';
+                if (currentTheme === 'dark') {
+                    colors.push(
+                        0.3 + Math.random() * 0.4, // R
+                        0.6 + Math.random() * 0.3, // G
+                        0.8 + Math.random() * 0.2  // B
+                    );
+                } else {
+                    colors.push(
+                        0.2 + Math.random() * 0.3, // R
+                        0.5 + Math.random() * 0.4, // G
+                        0.7 + Math.random() * 0.3  // B
+                    );
+                }
             }
 
             geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -803,6 +986,27 @@
                     card.style.opacity = '0.9';
                 });
             });
+        }
+
+        function updateParticleColors(theme) {
+            if (particles) {
+                const colors = particles.geometry.attributes.color.array;
+                const count = colors.length / 3;
+
+                for (let i = 0; i < count; i++) {
+                    const i3 = i * 3;
+                    if (theme === 'dark') {
+                        colors[i3] = 0.3 + Math.random() * 0.4;     // R
+                        colors[i3 + 1] = 0.6 + Math.random() * 0.3; // G
+                        colors[i3 + 2] = 0.8 + Math.random() * 0.2; // B
+                    } else {
+                        colors[i3] = 0.2 + Math.random() * 0.3;     // R
+                        colors[i3 + 1] = 0.5 + Math.random() * 0.4; // G
+                        colors[i3 + 2] = 0.7 + Math.random() * 0.3; // B
+                    }
+                }
+                particles.geometry.attributes.color.needsUpdate = true;
+            }
         }
 
         function onDocumentMouseMove(event) {
@@ -901,14 +1105,15 @@
         document.querySelectorAll('.skill-tag').forEach(tag => {
             tag.addEventListener('mouseenter', () => {
                 tag.style.transform = 'scale(1.05)';
-                tag.style.background = 'linear-gradient(45deg, rgba(74,144,226,0.3), rgba(66,184,131,0.3))';
             });
 
             tag.addEventListener('mouseleave', () => {
                 tag.style.transform = 'scale(1)';
-                tag.style.background = 'linear-gradient(45deg, rgba(74,144,226,0.2), rgba(66,184,131,0.2))';
             });
         });
+
+        // Load theme on page load
+        loadTheme();
     </script>
 </body>
 
