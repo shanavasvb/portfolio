@@ -166,6 +166,7 @@ const Portfolio = () => {
             src={image.url}
             alt={image.caption}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
         </div>
 
@@ -351,6 +352,13 @@ const Portfolio = () => {
         }
         .pulsing {
           animation: pulse 2s ease-in-out infinite;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
 
