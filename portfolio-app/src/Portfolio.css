@@ -27,23 +27,32 @@
   }
 }
 
-/* Gallery Card - New Enhanced Animation */
+/* Sliding Card Animation */
 .gallery-card {
-  will-change: transform;
+  will-change: transform, opacity;
   backface-visibility: hidden;
   perspective: 1000px;
-  transform-style: preserve-3d;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .gallery-card:hover {
-  box-shadow: 0 20px 60px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 20px 60px rgba(16, 185, 129, 0.4);
 }
 
-.gallery-card img {
+/* Image Parallax */
+.gallery-image {
   will-change: transform;
-  transition: transform 0.4s ease-out;
+  transition: transform 0.5s ease-out;
+}
+
+.gallery-card:hover .gallery-image {
+  transform: scale(1.05) translateX(10px);
+}
+
+/* Content Slide In */
+.gallery-content {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Hover lift effect */
@@ -87,4 +96,32 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Rotating Background Cards */
+@keyframes rotateCard {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.rotating-bg {
+  animation: rotateCard 20s linear infinite;
+}
+
+/* Pulse Animation */
+@keyframes pulse-border {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+}
+
+.pulse-border {
+  animation: pulse-border 2s infinite;
 }
