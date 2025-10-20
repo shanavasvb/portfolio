@@ -9,6 +9,11 @@ const Portfolio = () => {
   const [cursorVisible, setCursorVisible] = useState(true);
   const [activeSection, setActiveSection] = useState('hero');
 
+  // Resume configurations
+  const RESUME_FILE_ID = "1cb09ib9y-J_S5h6rmALXIbVDyv9A1bdQ";
+  const RESUME_DOWNLOAD_URL = `https://drive.google.com/uc?export=download&id=${RESUME_FILE_ID}`;
+  const RESUME_VIEW_URL = `https://drive.google.com/file/d/${RESUME_FILE_ID}/view?usp=sharing`;
+
   const fullText = "shanavas@portfolio:~$ whoami";
 
   useEffect(() => {
@@ -54,6 +59,21 @@ const Portfolio = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Function to handle resume view
+  const handleResumeClick = () => {
+    window.open(RESUME_VIEW_URL, '_blank');
+  };
+
+  // Function to download resume
+  const downloadResume = () => {
+    const link = document.createElement('a');
+    link.href = RESUME_DOWNLOAD_URL;
+    link.download = 'Shanavas_V_Basheer_Resume.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const projects = useMemo(() => [
     {
       title: "HomeServer Frontend",
@@ -93,66 +113,153 @@ const Portfolio = () => {
     { name: "AWS", level: 75, icon: "☁️" }
   ], []);
 
+  // Gallery images - Replace with your local images
+  // To use local images, change to: require('../images/image1.jpg')
+  // Make sure you have an 'images' folder in src/
   const galleryImages = useMemo(() => [
-    { url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600", caption: "Coding Competition 2024", award: "1st Place" },
-    { url: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=600", caption: "Web Design Contest", award: "Winner" },
-    { url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600", caption: "Workshop at TechFest", award: "Speaker" },
-    { url: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600", caption: "Debugging Championship", award: "Champion" },
-    { url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600", caption: "Team Collaboration", award: "Project Lead" }
+    { 
+      url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&h=800&fit=crop", 
+      caption: "Coding Competition 2024", 
+      award: "1st Place",
+      localPath: "/images/competition1.jpg" // Update when you add local images
+    },
+    { 
+      url: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=600&h=800&fit=crop", 
+      caption: "Web Design Contest", 
+      award: "Winner",
+      localPath: "/images/design-contest.jpg"
+    },
+    { 
+      url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=800&fit=crop", 
+      caption: "Workshop at TechFest", 
+      award: "Speaker",
+      localPath: "/images/workshop.jpg"
+    },
+    { 
+      url: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&h=800&fit=crop", 
+      caption: "Debugging Championship", 
+      award: "Champion",
+      localPath: "/images/debugging.jpg"
+    },
+    { 
+      url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=800&fit=crop", 
+      caption: "Team Collaboration", 
+      award: "Project Lead",
+      localPath: "/images/team.jpg"
+    }
   ], []);
 
-  const SlidingDoorCard = React.memo(({ image, index }) => {
+  // Enhanced Zoom & Tilt Card Animation
+  const GalleryCard = React.memo(({ image, index }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+    const handleMouseMove = (e) => {
+      const card = e.currentTarget;
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = (y - centerY) / 10;
+      const rotateY = (centerX - x) / 10;
+      
+      setMousePosition({ rotateX, rotateY });
+    };
+
+    const handleMouseLeave = () => {
+      setIsHovered(false);
+      setMousePosition({ x: 0, y: 0 });
+    };
 
     return (
       <div 
-        className="sliding-door-card relative h-96 w-64 overflow-hidden rounded-lg cursor-pointer group flex-shrink-0"
+        className="gallery-card relative h-96 w-72 overflow-hidden rounded-xl cursor-pointer group flex-shrink-0"
         data-index={index}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={handleMouseLeave}
+        onMouseMove={handleMouseMove}
+        style={{
+          transform: isHovered 
+            ? `perspective(1000px) rotateX(${mousePosition.rotateX}deg) rotateY(${mousePosition.rotateY}deg) scale(1.05)`
+            : 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)',
+          transition: 'transform 0.3s ease-out'
+        }}
       >
-        <div className="absolute inset-0 grid grid-cols-5 gap-0.5">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="door-panel relative overflow-hidden transition-all duration-500 ease-out"
-              style={{
-                transform: isHovered ? `translateX(${(i - 2) * 20}%)` : 'translateX(0)',
-                transitionDelay: `${i * 0.05}s`,
-                transformStyle: 'preserve-3d'
-              }}
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{
-                  backgroundImage: `url(${image.url})`,
-                  width: '320%',
-                  left: `-${i * 80}%`,
-                  backgroundAttachment: 'fixed',
-                  backgroundPosition: 'center'
-                }}
-              />
-            </div>
-          ))}
+        {/* Image Container */}
+        <div 
+          className="absolute inset-0 overflow-hidden rounded-xl"
+          style={{
+            transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+            transition: 'transform 0.4s ease-out'
+          }}
+        >
+          <img 
+            src={image.url}
+            alt={image.caption}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         </div>
-        
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-60'}`}>
-          <div 
-            className="absolute bottom-0 left-0 right-0 p-4 transform transition-transform duration-300" 
-            style={{ 
-              transform: isHovered ? 'translateY(0)' : 'translateY(20px)',
-              transformStyle: 'preserve-3d'
-            }}
-          >
-            <div className="text-emerald-400 text-sm font-semibold mb-1">{image.award}</div>
-            <div className="text-white font-medium">{image.caption}</div>
+
+        {/* Overlay Gradient */}
+        <div 
+          className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent transition-all duration-300 rounded-xl ${
+            isHovered ? 'opacity-100' : 'opacity-70'
+          }`}
+        />
+
+        {/* Shine Effect */}
+        <div 
+          className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300"
+          style={{
+            background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+            transform: isHovered ? 'translateX(100%)' : 'translateX(-100%)',
+            transition: 'transform 0.6s ease-in-out'
+          }}
+        />
+
+        {/* Content */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 p-6 transform transition-all duration-300"
+          style={{
+            transform: isHovered ? 'translateY(0)' : 'translateY(20px)',
+            opacity: isHovered ? 1 : 0.9
+          }}
+        >
+          <div className="text-emerald-400 text-sm font-bold mb-2 flex items-center gap-2">
+            <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+            {image.award}
           </div>
+          <h3 className="text-white font-bold text-lg">{image.caption}</h3>
+          <div 
+            className="mt-3 h-0.5 bg-gradient-to-r from-emerald-400 to-cyan-400"
+            style={{
+              transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
+              transformOrigin: 'left',
+              transition: 'transform 0.3s ease-out'
+            }}
+          />
+        </div>
+
+        {/* Badge Animation */}
+        <div 
+          className="absolute top-4 right-4 px-3 py-1 bg-emerald-500/80 backdrop-blur-sm rounded-full text-xs font-semibold text-white"
+          style={{
+            transform: isHovered ? 'translateY(0) scale(1)' : 'translateY(-10px) scale(0.8)',
+            opacity: isHovered ? 1 : 0,
+            transition: 'all 0.3s ease-out'
+          }}
+        >
+          Featured
         </div>
       </div>
     );
   });
 
-  SlidingDoorCard.displayName = 'SlidingDoorCard';
+  GalleryCard.displayName = 'GalleryCard';
 
   return (
     <div className={`min-h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
@@ -166,7 +273,7 @@ const Portfolio = () => {
       </div>
 
       {/* Navigation */}
-      <nav className={`fixed top-1 left-0 right-0 z-40 transition-all duration-300 ${scrollProgress > 5 ? (darkMode ? 'bg-gray-900/95' : 'bg-gray-50/95') : ''} backdrop-blur-sm`}>
+      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrollProgress > 5 ? (darkMode ? 'bg-gray-900/95 backdrop-blur-lg' : 'bg-gray-50/95 backdrop-blur-lg') : ''}`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
             SVB
@@ -199,7 +306,7 @@ const Portfolio = () => {
         </div>
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-4 mb-8 inline-block font-mono text-left shadow-lg`}>
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-4 mb-8 inline-block font-mono text-left shadow-lg border border-emerald-500/30`}>
             <div className="text-emerald-400 mb-2">
               {terminalText}
               <span className={`${cursorVisible ? 'opacity-100' : 'opacity-0'}`}>▋</span>
@@ -232,13 +339,13 @@ const Portfolio = () => {
               <Mail size={20} />
               Get In Touch
             </a>
-            <a
-              href="#contact"
-              className="px-8 py-4 border-2 border-emerald-500 rounded-lg font-semibold hover:bg-emerald-500/10 transition-all duration-300 flex items-center gap-2 cursor-pointer"
+            <button
+              onClick={handleResumeClick}
+              className="px-8 py-4 border-2 border-emerald-500 rounded-lg font-semibold hover:bg-emerald-500/10 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
             >
-              <Download size={20} />
-              Download Resume
-            </a>
+              <Download size={20} className="group-hover:animate-bounce" />
+              View Resume
+            </button>
           </div>
 
           <div className="flex gap-6 justify-center mt-12">
@@ -267,7 +374,7 @@ const Portfolio = () => {
             {projects.map((project, i) => (
               <div
                 key={i}
-                className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-8 hover-lift`}
+                className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl p-8 hover-lift border`}
                 style={{ 
                   animation: `slideUp 0.6s ease-out forwards`,
                   animationDelay: `${i * 0.2}s`,
@@ -315,7 +422,7 @@ const Portfolio = () => {
                   <div className="w-3 h-3 bg-white rounded-full" />
                 </div>
                 
-                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 hover-lift`}>
+                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg p-6 hover-lift border`}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="text-emerald-400 font-semibold text-sm mb-1">{achievement.year}</div>
@@ -332,7 +439,7 @@ const Portfolio = () => {
         </div>
       </section>
 
-      {/* Gallery Section - Sliding Door Effect */}
+      {/* Gallery Section - New Animation */}
       <section id="gallery" className="py-32 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -340,14 +447,14 @@ const Portfolio = () => {
             <p className="text-gray-400 text-lg">Moments from competitions, workshops, and achievements</p>
           </div>
 
-          <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide">
+          <div className="flex gap-8 overflow-x-auto pb-8 scrollbar-hide justify-center md:justify-start px-4">
             {galleryImages.map((image, i) => (
-              <SlidingDoorCard key={`gallery-${i}`} image={image} index={i} />
+              <GalleryCard key={`gallery-${i}`} image={image} index={i} />
             ))}
           </div>
 
           <p className="text-center text-gray-500 text-sm mt-8 italic">
-            Hover over images to reveal • Sliding door effect
+            Hover over images for 3D tilt & zoom effect • Add your images to src/images folder
           </p>
         </div>
       </section>
@@ -364,7 +471,7 @@ const Portfolio = () => {
             {skills.map((skill, i) => (
               <div
                 key={i}
-                className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6`}
+                className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg p-6 border`}
                 style={{ 
                   animation: `slideUp 0.6s ease-out forwards`,
                   animationDelay: `${i * 0.1}s`,
@@ -412,7 +519,7 @@ const Portfolio = () => {
           <div className="flex gap-6 justify-center flex-wrap mb-12">
             <a
               href="mailto:shanavasvbasheer@gmail.com"
-              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} px-8 py-4 rounded-lg hover-lift flex items-center gap-3`}
+              className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-8 py-4 rounded-lg hover-lift flex items-center gap-3 border`}
             >
               <Mail className="text-emerald-400" />
               <div className="text-left">
@@ -423,7 +530,7 @@ const Portfolio = () => {
 
             <a
               href="tel:+918547363158"
-              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} px-8 py-4 rounded-lg hover-lift flex items-center gap-3`}
+              className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-8 py-4 rounded-lg hover-lift flex items-center gap-3 border`}
             >
               <ExternalLink className="text-emerald-400" />
               <div className="text-left">
@@ -441,7 +548,7 @@ const Portfolio = () => {
       </section>
 
       {/* Footer */}
-      <footer className={`${darkMode ? 'bg-gray-800' : 'bg-gray-200'} py-8 px-6 text-center`}>
+      <footer className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-200 border-gray-300'} py-8 px-6 text-center border-t`}>
         <p className="text-gray-500">
           © 2025 Shanavas V Basheer. Built with React & Love.
         </p>
