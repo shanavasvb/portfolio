@@ -11,7 +11,6 @@ const Portfolio = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const RESUME_FILE_ID = "1cb09ib9y-J_S5h6rmALXIbVDyv9A1bdQ";
-  const RESUME_DOWNLOAD_URL = `https://drive.google.com/uc?export=download&id=${RESUME_FILE_ID}`;
   const RESUME_VIEW_URL = `https://drive.google.com/file/d/${RESUME_FILE_ID}/view?usp=sharing`;
 
   const fullText = "shanavas@portfolio:~$ whoami";
@@ -47,7 +46,7 @@ const Portfolio = () => {
       clearInterval(typing);
       clearInterval(cursor);
     };
-  }, []);
+  }, [fullText]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,7 +73,7 @@ const Portfolio = () => {
   // Auto-rotate gallery cards
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveCard(prev => (prev + 1) % galleryImages.length);
+      setActiveCard(prev => (prev + 1) % 2);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -691,7 +690,7 @@ const Portfolio = () => {
           <div className="text-gray-500 text-sm">
             <p className="mb-2">Currently pursuing M.Voc in Software Application Development at CUSAT</p>
             <p className="flex items-center justify-center gap-2">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
               Based in Kozhikode, Kerala, India
             </p>
           </div>
