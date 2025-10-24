@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Github,
   Linkedin,
@@ -19,13 +19,14 @@ import {
   Phone,
   MapPin,
   Calendar,
-  ChevronLeft
+  ChevronLeft,
+  Copy,
+  Check
 } from 'lucide-react';
 
 // Constants
 const ANIMATION_DELAY_INCREMENT = 0.15;
 const GALLERY_AUTO_ROTATE_INTERVAL = 5000;
-const TYPING_SPEED = 80;
 const CURSOR_BLINK_SPEED = 530;
 const SCROLL_THRESHOLD = 150;
 const MOUSE_PARALLAX_INTENSITY = 15;
@@ -51,24 +52,324 @@ const throttle = (func, delay) => {
   };
 };
 
+// Interactive Terminal Component
+const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownload }) => {
+  const [inputValue, setInputValue] = useState('');
+  const [history, setHistory] = useState(['Type "help" to see available commands']);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [commandHistory, setCommandHistory] = useState([]);
+  const terminalRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const commands = {
+    help: {
+      description: 'Show all available commands',
+      execute: () => [
+        '📋 Available Commands:',
+        '─────────────────────────',
+        'help              - Show this help message',
+        'whoami            - Display your information',
+        'skills            - Navigate to skills section',
+        'projects          - Navigate to projects section',
+        'achievements      - Navigate to achievements section',
+        'contact           - Navigate to contact section',
+        'resume view       - Open resume in new tab',
+        'resume dl         - Download resume',
+        'clear             - Clear terminal screen',
+        '─────────────────────────',
+        '💡 Tip: Use arrow keys to navigate command history'
+      ]
+    },
+    whoami: {
+      description: 'Display your information',
+      execute: () => [
+        '👤 Shanavas V Basheer',
+        '─────────────────────────',
+        '📍 Location: Kochi, Kerala, India',
+        '🎓 Education: M.Voc in Software Application Development (CUSAT)',
+        '💼 Role: Full-Stack Developer | Competitive Coder',
+        '📧 Email: shanavasvbasheer@gmail.com',
+        '📱 Phone: +91 85473 63158',
+        '💻 GitHub: github.com/shanavasvbasheer',
+        '🔗 LinkedIn: linkedin.com/in/shanavasvbasheer',
+        '─────────────────────────',
+        '✨ Status: Available for opportunities'
+      ]
+    },
+    skills: {
+      description: 'Navigate to skills section',
+      execute: () => {
+        onNavigate('skills');
+        return ['✅ Navigating to Skills section...'];
+      }
+    },
+    projects: {
+      description: 'Navigate to projects section',
+      execute: () => {
+        onNavigate('projects');
+        return ['✅ Navigating to Projects section...'];
+      }
+    },
+    achievements: {
+      description: 'Navigate to achievements section',
+      execute: () => {
+        onNavigate('achievements');
+        return ['✅ Navigating to Achievements section...'];
+      }
+    },
+    contact: {
+      description: 'Navigate to contact section',
+      execute: () => {
+        onNavigate('contact');
+        return ['✅ Navigating to Contact section...'];
+      }
+    },
+    'resume view': {
+      description: 'Open resume in new tab',
+      execute: () => {
+        handleResumeView();
+        return ['✅ Opening resume in new tab...'];
+      }
+    },
+    'resume dl': {
+      description: 'Download resume',
+      execute: () => {
+        handleResumeDownload();
+        return ['✅ Downloading resume...'];
+      }
+    },
+    clear: {
+      description: 'Clear terminal screen',
+      execute: () => null
+    }
+  };
+
+  const executeCommand = (cmd) => {
+    const trimmedCmd = cmd.trim().toLowerCase();
+    
+    if (trimmedCmd === '') {
+      return;
+    }
+
+    setCommandHistory([...commandHistory, trimmedCmd]);
+    setHistoryIndex(-1);
+
+    if (trimmedCmd === 'clear') {
+      setHistory([]);
+      setInputValue('');
+      return;
+    }
+
+    const command = commands[trimmedCmd];
+    
+    let output;
+    if (command) {
+      output = command.execute();
+    } else {
+      output = [`❌ Command not found: "${trimmedCmd}". Type "help" for available commands.`];
+    }
+
+    if (output) {
+      setHistory([...history, `$ ${cmd}`, ...output, '']);
+    }
+    setInputValue('');
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      executeCommand(inputValue);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (historyIndex < commandHistory.length - 1) {
+        const newIndex = historyIndex + 1;
+        setHistoryIndex(newIndex);
+        setInputValue(commandHistory[commandHistory.length - 1 - newIndex]);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex > 0) {
+        const newIndex = historyIndex - 1;
+        setHistoryIndex(newIndex);
+        setInputValue(commandHistory[commandHistory.length - 1 - newIndex]);
+      } else if (historyIndex === 0) {
+        setHistoryIndex(-1);
+        setInputValue('');
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [history]);
+
+  return (
+    <div className="w-full rounded-xl overflow-hidden shadow-2xl border-2 border-blue-500/30 hover:border-blue-500/60 transition-all">
+      {/* Traffic Light Buttons */}
+      <div className="bg-gray-800 px-4 py-3 flex gap-3 items-center border-b border-gray-700">
+        <div className="flex gap-2">
+          <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 cursor-pointer transition-colors" title="Close" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer transition-colors" title="Minimize" />
+          <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 cursor-pointer transition-colors" title="Maximize" />
+        </div>
+        <div className="ml-4 text-gray-400 text-sm font-mono flex-1">Portfolio Terminal</div>
+        <Terminal size={16} className="text-blue-400" />
+      </div>
+
+      {/* Terminal Content */}
+      <div
+        ref={terminalRef}
+        className="bg-gray-900 p-6 font-mono text-sm h-96 overflow-y-auto scrollbar-hide text-gray-100"
+      >
+        {history.map((line, i) => (
+          <div
+            key={i}
+            className={`${
+              line.startsWith('$') ? 'text-blue-400 font-semibold' :
+              line.startsWith('✅') ? 'text-green-400' :
+              line.startsWith('❌') ? 'text-red-400' :
+              line.startsWith('📋') || line.startsWith('👤') || line.startsWith('─') ? 'text-cyan-400' :
+              'text-gray-100'
+            }`}
+            style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+          >
+            {line}
+          </div>
+        ))}
+      </div>
+
+      {/* Terminal Input */}
+      <div className="bg-gray-800 px-6 py-4 border-t border-gray-700 flex items-center gap-2">
+        <span className="text-blue-400 font-mono font-semibold">svb@portfolio:~$</span>
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Type a command..."
+          className="flex-1 bg-transparent outline-none text-white font-mono placeholder-gray-600 focus:placeholder-gray-500 transition-colors"
+          autoFocus
+        />
+      </div>
+    </div>
+  );
+};
+
+// Skill Card Component
+const SkillCard = ({ skill, imageErrors, handleImageError, index }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className="group relative overflow-hidden rounded-xl p-8 bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-blue-500/20 hover:border-blue-500/60 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 cursor-pointer"
+      style={{
+        animation: `slideUp 0.6s ease-out forwards`,
+        animationDelay: `${index * 0.1}s`,
+        opacity: 0
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Background gradient on hover */}
+      <div
+        className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      />
+
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Icon Container */}
+        <div
+          className="mb-6 flex justify-center"
+          style={{
+            transform: isHovered ? 'scale(1.15) translateY(-8px)' : 'scale(1)',
+            transition: 'transform 0.3s ease-out'
+          }}
+        >
+          {!imageErrors[`skill-${index}`] ? (
+            <img
+              src={skill.iconSrc}
+              alt={skill.name}
+              className="w-16 h-16 object-contain drop-shadow-lg"
+              onError={() => handleImageError(`skill-${index}`)}
+            />
+          ) : (
+            <div className="w-16 h-16 flex items-center justify-center text-4xl">
+              {skill.fallback}
+            </div>
+          )}
+        </div>
+
+        {/* Skill Name */}
+        <h3
+          className="text-xl font-bold text-center mb-3 text-white group-hover:text-blue-400 transition-colors duration-300"
+        >
+          {skill.name}
+        </h3>
+
+        {/* Proficiency Percentage */}
+        <div className="text-center mb-4">
+          <span
+            className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+          >
+            {skill.level}%
+          </span>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="h-2 bg-gray-700 rounded-full overflow-hidden mb-3">
+          <div
+            className={`h-full bg-gradient-to-r ${skill.color} rounded-full shadow-lg transition-all duration-1000 ease-out`}
+            style={{
+              width: isHovered ? `${skill.level}%` : '0%',
+              boxShadow: isHovered ? `0 0 20px rgba(59, 130, 246, 0.6)` : 'none'
+            }}
+          />
+        </div>
+
+        {/* Proficiency Label */}
+        <p
+          className={`text-xs text-center font-semibold transition-all duration-300 ${
+            skill.level >= 90 ? 'text-green-400' :
+            skill.level >= 75 ? 'text-blue-400' :
+            'text-purple-400'
+          }`}
+        >
+          {skill.level >= 90 ? '🔥 Expert' : skill.level >= 75 ? '⭐ Proficient' : '📚 Learning'}
+        </p>
+      </div>
+
+      {/* Border gradient on hover */}
+      <div
+        className="absolute inset-0 rounded-xl pointer-events-none transition-all duration-300"
+        style={{
+          borderRadius: '0.75rem',
+          background: isHovered
+            ? `linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2))`
+            : 'none'
+        }}
+      />
+    </div>
+  );
+};
+
 const Portfolio = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [terminalText, setTerminalText] = useState('');
   const [cursorVisible, setCursorVisible] = useState(true);
   const [activeSection, setActiveSection] = useState('hero');
   const [activeCard, setActiveCard] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [imageErrors, setImageErrors] = useState({});
+  const [copiedEmail, setCopiedEmail] = useState(false);
 
   const RESUME_FILE_ID = "1cb09ib9y-J_S5h6rmALXIbVDyv9A1bdQ";
   const RESUME_VIEW_URL = `https://drive.google.com/file/d/${RESUME_FILE_ID}/view?usp=sharing`;
   const RESUME_DOWNLOAD_URL = `https://drive.google.com/uc?export=download&id=${RESUME_FILE_ID}`;
 
-  const fullText = "shanavas@portfolio:~$ whoami";
-
-  // Check if device is mobile
   const isMobile = useMemo(() => {
     return window.matchMedia('(max-width: 768px)').matches;
   }, []);
@@ -93,27 +394,13 @@ const Portfolio = () => {
     }
   }, [handleMouseMove, isMobile]);
 
-  // Terminal typing effect
+  // Cursor blink effect
   useEffect(() => {
-    let i = 0;
-    const typing = setInterval(() => {
-      if (i < fullText.length) {
-        setTerminalText(fullText.slice(0, i + 1));
-        i++;
-      } else {
-        clearInterval(typing);
-      }
-    }, TYPING_SPEED);
-
     const cursor = setInterval(() => {
       setCursorVisible(v => !v);
     }, CURSOR_BLINK_SPEED);
-
-    return () => {
-      clearInterval(typing);
-      clearInterval(cursor);
-    };
-  }, [fullText]);
+    return () => clearInterval(cursor);
+  }, []);
 
   // Scroll progress and active section detection
   useEffect(() => {
@@ -139,22 +426,22 @@ const Portfolio = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Gallery images - Replace these paths with your actual image paths
+  // Gallery images
   const galleryImages = useMemo(() => [
     {
-      url: "/images/achievement1.jpg", // Replace with your actual image path
+      url: "/images/achievement1.jpg",
       caption: "Coding Competition 2024",
       award: "1st Place",
       description: "Won first place in regional coding competition with optimal algorithmic solutions and efficient problem-solving approaches"
     },
     {
-      url: "/images/achievement2.jpg", // Replace with your actual image path
+      url: "/images/achievement2.jpg",
       caption: "Project Showcase Event",
       award: "Featured Project",
       description: "Showcased innovative full-stack development projects at the college technical festival with live demonstrations"
     },
     {
-      url: "/images/achievement3.jpg", // Replace with your actual image path
+      url: "/images/achievement3.jpg",
       caption: "Technical Workshop 2024",
       award: "Speaker",
       description: "Conducted hands-on workshop on modern web development practices and cloud architecture for 100+ students"
@@ -177,12 +464,25 @@ const Portfolio = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const handleResumeView = () => {
     window.open(RESUME_VIEW_URL, '_blank', 'noopener,noreferrer');
   };
 
   const handleResumeDownload = () => {
     window.open(RESUME_DOWNLOAD_URL, '_blank', 'noopener,noreferrer');
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
   };
 
   const projects = useMemo(() => [
@@ -244,56 +544,56 @@ const Portfolio = () => {
       name: "C++",
       level: 95,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/cplusplus/cplusplus-original.svg",
-      color: "from-blue-500 to-blue-600",
+      color: "from-blue-500 via-purple-500 to-pink-500",
       fallback: "💻"
     },
     {
       name: "JavaScript",
       level: 95,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg",
-      color: "from-yellow-500 to-yellow-600",
+      color: "from-blue-500 via-purple-500 to-pink-500",
       fallback: "⚡"
     },
     {
       name: "React",
       level: 90,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original-wordmark.svg",
-      color: "from-cyan-500 to-cyan-600",
+      color: "from-blue-500 via-purple-500 to-pink-500",
       fallback: "⚛️"
     },
     {
       name: "Node.js",
       level: 90,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg",
-      color: "from-green-500 to-green-600",
+      color: "from-blue-500 via-purple-500 to-pink-500",
       fallback: "🟢"
     },
     {
       name: "MongoDB",
       level: 90,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original-wordmark.svg",
-      color: "from-emerald-500 to-emerald-600",
+      color: "from-blue-500 via-purple-500 to-pink-500",
       fallback: "🍃"
     },
     {
       name: "Python",
       level: 85,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg",
-      color: "from-blue-400 to-blue-500",
+      color: "from-blue-500 via-purple-500 to-pink-500",
       fallback: "🐍"
     },
     {
       name: "Swift",
       level: 75,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/swift/swift-original.svg",
-      color: "from-orange-500 to-orange-600",
+      color: "from-blue-500 via-purple-500 to-pink-500",
       fallback: "🍎"
     },
     {
       name: "Kotlin",
       level: 75,
       iconSrc: "https://www.vectorlogo.zone/logos/kotlinlang/kotlinlang-icon.svg",
-      color: "from-purple-500 to-purple-600",
+      color: "from-blue-500 via-purple-500 to-pink-500",
       fallback: "🤖"
     }
   ], []);
@@ -345,8 +645,8 @@ const Portfolio = () => {
               onError={() => setImgError(true)}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-900 to-cyan-900">
-              <Award size={64} className="text-emerald-400 opacity-50" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
+              <Award size={64} className="text-blue-400 opacity-50" />
             </div>
           )}
         </div>
@@ -362,8 +662,8 @@ const Portfolio = () => {
         <div
           className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
-            border: isHovered ? '2px solid rgba(16, 185, 129, 0.6)' : '2px solid rgba(16, 185, 129, 0.2)',
-            boxShadow: isHovered ? '0 0 40px rgba(16, 185, 129, 0.4), inset 0 0 40px rgba(16, 185, 129, 0.1)' : 'none',
+            border: isHovered ? '2px solid rgba(59, 130, 246, 0.6)' : '2px solid rgba(59, 130, 246, 0.2)',
+            boxShadow: isHovered ? '0 0 40px rgba(59, 130, 246, 0.4), inset 0 0 40px rgba(59, 130, 246, 0.1)' : 'none',
             transition: 'all 0.4s ease-out'
           }}
         />
@@ -384,7 +684,7 @@ const Portfolio = () => {
               transition: 'all 0.5s ease-out'
             }}
           >
-            <span className="px-4 py-2 bg-emerald-500 backdrop-blur-sm rounded-full text-xs font-bold text-white inline-flex items-center gap-2 shadow-lg">
+            <span className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 backdrop-blur-sm rounded-full text-xs font-bold text-white inline-flex items-center gap-2 shadow-lg">
               <Sparkles size={14} />
               {image.award}
             </span>
@@ -404,7 +704,7 @@ const Portfolio = () => {
           </p>
 
           <div
-            className="h-1 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 rounded-full shadow-lg"
+            className="h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full shadow-lg"
             style={{
               transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
               transformOrigin: 'left',
@@ -435,9 +735,9 @@ const Portfolio = () => {
         <button
           key={idx}
           onClick={() => setActiveCard(idx)}
-          className={`transition-all duration-500 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+          className={`transition-all duration-500 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${
             idx === activeCard
-              ? 'w-12 h-3 bg-gradient-to-r from-emerald-400 to-cyan-400 shadow-lg shadow-emerald-500/50'
+              ? 'w-12 h-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 shadow-lg shadow-blue-500/50'
               : 'w-3 h-3 bg-gray-600 hover:bg-gray-500 hover:scale-125'
           }`}
           aria-label={`Go to slide ${idx + 1}`}
@@ -451,7 +751,7 @@ const Portfolio = () => {
       <style>{`
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes float { 0%,100% { transform: translateY(0px) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } }
-        @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(16,185,129,0.5); } 50% { box-shadow: 0 0 40px rgba(16,185,129,0.8), 0 0 60px rgba(16,185,129,0.4); } }
+        @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(59,130,246,0.5); } 50% { box-shadow: 0 0 40px rgba(59,130,246,0.8), 0 0 60px rgba(59,130,246,0.4); } }
         @keyframes pulse { 0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.05);opacity:0.8;} }
         @keyframes shimmer { 0%{background-position:-1000px 0;}100%{background-position:1000px 0;} }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -463,10 +763,10 @@ const Portfolio = () => {
         }
         .hover-lift:hover{ 
           transform: translateY(-12px) scale(1.02); 
-          box-shadow: 0 25px 50px rgba(16,185,129,0.3); 
+          box-shadow: 0 25px 50px rgba(59, 130, 246, 0.3); 
         }
         .hover-lift:focus-within {
-          outline: 2px solid rgba(16, 185, 129, 0.5);
+          outline: 2px solid rgba(59, 130, 246, 0.5);
           outline-offset: 4px;
         }
         
@@ -481,7 +781,7 @@ const Portfolio = () => {
           left:0; 
           width:0; 
           height:2px; 
-          background: linear-gradient(90deg,#10b981,#06b6d4); 
+          background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); 
           transition: width .3s; 
         }
         .nav-link:hover::after, 
@@ -489,13 +789,13 @@ const Portfolio = () => {
           width:100%; 
         }
         .nav-link:focus {
-          outline: 2px solid rgba(16, 185, 129, 0.5);
+          outline: 2px solid rgba(59, 130, 246, 0.5);
           outline-offset: 4px;
           border-radius: 4px;
         }
         
         .gradient-text { 
-          background: linear-gradient(90deg,#10b981,#06b6d4,#3b82f6); 
+          background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); 
           background-size:200% 200%; 
           animation: shimmer 3s linear infinite; 
           -webkit-background-clip:text; 
@@ -539,13 +839,13 @@ const Portfolio = () => {
           transition: all .3s ease;
         }
         .tools-row a:hover { 
-          background: rgba(16, 185, 129, 0.1);
+          background: rgba(59, 130, 246, 0.1);
         }
         .tools-row a:hover img { 
           transform: translateY(-4px) scale(1.1); 
         }
         .tools-row a:focus {
-          outline: 2px solid rgba(16, 185, 129, 0.5);
+          outline: 2px solid rgba(59, 130, 246, 0.5);
           outline-offset: 2px;
         }
         
@@ -564,7 +864,7 @@ const Portfolio = () => {
         
         button:focus,
         a:focus {
-          outline: 2px solid rgba(16, 185, 129, 0.5);
+          outline: 2px solid rgba(59, 130, 246, 0.5);
           outline-offset: 2px;
         }
         
@@ -582,7 +882,7 @@ const Portfolio = () => {
       {/* Skip to content link for accessibility */}
       <a 
         href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-emerald-500 focus:text-white focus:rounded-lg"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-lg"
       >
         Skip to main content
       </a>
@@ -590,7 +890,7 @@ const Portfolio = () => {
       {/* Top progress bar */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-gray-800 z-50" role="progressbar" aria-valuenow={scrollProgress} aria-valuemin="0" aria-valuemax="100">
         <div 
-          className="h-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 transition-all duration-300" 
+          className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-300" 
           style={{ width: `${scrollProgress}%` }} 
         />
       </div>
@@ -611,7 +911,7 @@ const Portfolio = () => {
                 key={item} 
                 href={`#${item}`} 
                 className={`nav-link text-sm font-medium transition-colors ${
-                  activeSection === item ? 'active text-emerald-400' : darkMode ? 'text-gray-300' : 'text-gray-600'
+                  activeSection === item ? 'active text-blue-400' : darkMode ? 'text-gray-300' : 'text-gray-600'
                 }`}
                 aria-current={activeSection === item ? 'page' : undefined}
               >
@@ -620,7 +920,7 @@ const Portfolio = () => {
             ))}
             <button 
               onClick={() => setDarkMode(!darkMode)} 
-              className="p-2 rounded-full hover:bg-emerald-500/20 transition-all hover:scale-110"
+              className="p-2 rounded-full hover:bg-blue-500/20 transition-all hover:scale-110"
               aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
             >
               {darkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-indigo-400" />}
@@ -634,8 +934,8 @@ const Portfolio = () => {
         <button
           onClick={scrollToTop}
           className={`fixed bottom-8 right-8 z-40 p-4 rounded-full ${
-            darkMode ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-emerald-600 hover:bg-emerald-700'
-          } text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2`}
+            darkMode ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+          } text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2`}
           aria-label="Back to top"
           style={{ animation: 'fadeIn 0.3s ease-out' }}
         >
@@ -647,21 +947,21 @@ const Portfolio = () => {
       <section id="hero" className="min-h-screen flex items-center justify-center relative overflow-hidden px-6 pt-20">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <div 
-            className="absolute top-20 left-20 w-72 h-72 bg-emerald-500 rounded-full filter blur-3xl floating" 
+            className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full filter blur-3xl floating" 
             style={{ 
               transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)`,
               willChange: 'transform'
             }} 
           />
           <div 
-            className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500 rounded-full filter blur-3xl floating" 
+            className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl floating" 
             style={{ 
               transform: `translate(${-mousePosition.x}px, ${-mousePosition.y}px)`,
               willChange: 'transform'
             }} 
           />
           <div 
-            className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-500 rounded-full filter blur-3xl floating" 
+            className="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-500 rounded-full filter blur-3xl floating" 
             style={{ 
               transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
               willChange: 'transform'
@@ -669,42 +969,39 @@ const Portfolio = () => {
           />
         </div>
 
-        <div className="max-w-5xl mx-auto text-center relative z-10" id="main-content">
-          <div 
-            className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-4 mb-8 inline-block font-mono text-left shadow-2xl border-2 border-emerald-500/30 hover:border-emerald-500/60 transition-all hover:scale-105`}
-          >
-            <div className="text-emerald-400 mb-2">
-              {terminalText}
-              <span className={`${cursorVisible ? 'opacity-100' : 'opacity-0'} transition-opacity`}>▋</span>
-            </div>
-            <div className="text-sm">
-              <span className="text-gray-500">→</span> Full-Stack Developer | Competitive Coder | Problem Solver
-            </div>
+        <div className="max-w-5xl mx-auto relative z-10" id="main-content">
+          {/* Interactive Terminal */}
+          <div className="mb-12">
+            <InteractiveTerminal 
+              onNavigate={scrollToSection}
+              handleResumeView={handleResumeView}
+              handleResumeDownload={handleResumeDownload}
+            />
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-center">
             <span className="gradient-text">Shanavas V Basheer</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-400 mb-4 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-gray-400 mb-4 max-w-3xl mx-auto leading-relaxed text-center">
             Experienced Full-Stack Developer specializing in backend architecture, cloud solutions, and enterprise-grade applications.
             Passionate about building scalable systems, automating workflows, and solving complex technical challenges.
           </p>
 
-          <p className="text-emerald-400 text-lg md:text-xl mb-12 font-semibold flex items-center justify-center gap-2">
+          <p className="text-blue-400 text-lg md:text-xl mb-12 font-semibold flex items-center justify-center gap-2">
             <Zap size={24} className="pulsing" /> Build. Break. Better. <Rocket size={24} className="pulsing" style={{ animationDelay: '0.5s' }} />
           </p>
 
           <div className="flex gap-4 justify-center flex-wrap mb-8">
             <a 
               href="mailto:shanavasvbasheer@gmail.com" 
-              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer"
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer"
             >
               <Mail size={20} /> Get In Touch
             </a>
             <button 
               onClick={handleResumeView}
-              className="px-8 py-4 border-2 border-emerald-500 rounded-lg font-semibold hover:bg-emerald-500/10 hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
+              className="px-8 py-4 border-2 border-blue-500 rounded-lg font-semibold hover:bg-blue-500/10 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
             >
               <Download size={20} className="group-hover:animate-bounce" /> View Resume
             </button>
@@ -721,7 +1018,7 @@ const Portfolio = () => {
                 href={href} 
                 target={href.includes('http') ? "_blank" : undefined} 
                 rel={href.includes('http') ? "noopener noreferrer" : undefined}
-                className="p-3 rounded-full hover:bg-emerald-500/20 transition-all hover:scale-125 hover:rotate-12"
+                className="p-3 rounded-full hover:bg-blue-500/20 transition-all hover:scale-125 hover:rotate-12"
                 aria-label={label}
               >
                 <Icon size={24} />
@@ -735,7 +1032,7 @@ const Portfolio = () => {
       <section id="projects" className="py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-16">
-            <Code className="text-emerald-400" size={32} />
+            <Code className="text-blue-400" size={32} />
             <h2 className="text-5xl font-bold gradient-text">Featured Projects</h2>
           </div>
 
@@ -743,15 +1040,14 @@ const Portfolio = () => {
             {projects.map((project, i) => (
               <div
                 key={i}
-                className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl p-8 hover-lift border-2 group`}
+                className={`bg-gray-800 border-2 border-blue-500/20 rounded-xl p-8 hover-lift group hover:border-blue-500/60`}
                 style={{
                   animation: `slideUp 0.6s ease-out forwards`,
                   animationDelay: `${i * ANIMATION_DELAY_INCREMENT}s`,
                   opacity: 0
                 }}
               >
-                <div className="text-4xl mb-4">{project.icon}</div>
-                <h3 className="text-2xl font-bold mb-4 text-emerald-400 group-hover:text-cyan-400 transition-colors">
+                <h3 className="text-2xl font-bold mb-4 text-blue-400 group-hover:text-purple-400 transition-colors">
                   {project.title}
                 </h3>
                 <p className="text-gray-400 mb-6 leading-relaxed">{project.description}</p>
@@ -760,7 +1056,7 @@ const Portfolio = () => {
                   {project.tech.map((tech, j) => (
                     <span 
                       key={j} 
-                      className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm hover:bg-emerald-500/30 transition-colors"
+                      className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm hover:bg-blue-500/30 transition-colors"
                     >
                       {tech}
                     </span>
@@ -774,7 +1070,7 @@ const Portfolio = () => {
                     href={project.repo} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="inline-flex items-center gap-2 text-emerald-500 hover:text-cyan-500 font-medium transition-colors"
+                    className="inline-flex items-center gap-2 text-blue-500 hover:text-purple-500 font-medium transition-colors"
                   >
                     <Github size={18} /> View Code
                   </a>
@@ -783,7 +1079,7 @@ const Portfolio = () => {
                       href={project.live} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="inline-flex items-center gap-2 text-cyan-500 hover:text-emerald-500 font-medium transition-colors"
+                      className="inline-flex items-center gap-2 text-purple-500 hover:text-pink-500 font-medium transition-colors"
                     >
                       <ExternalLink size={18} /> Live Demo
                     </a>
@@ -796,15 +1092,15 @@ const Portfolio = () => {
       </section>
 
       {/* Achievements Section */}
-      <section id="achievements" className={`py-32 px-6 ${darkMode ? 'bg-gray-800/50' : 'bg-gray-100'}`}>
+      <section id="achievements" className="py-32 px-6 bg-gray-800/50">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-16">
-            <Award className="text-emerald-400" size={32} />
+            <Award className="text-blue-400" size={32} />
             <h2 className="text-5xl font-bold gradient-text">Achievements & Experience</h2>
           </div>
 
           <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-emerald-500 via-cyan-500 to-blue-500" />
+            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500" />
             
             {achievements.map((achievement, i) => (
               <div 
@@ -817,26 +1113,26 @@ const Portfolio = () => {
                 }}
               >
                 <div 
-                  className="absolute left-4 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg" 
+                  className="absolute left-4 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg" 
                   style={{ animation: 'glow 2s ease-in-out infinite', animationDelay: `${i * 0.3}s` }}
                 >
                   <div className="w-3 h-3 bg-white rounded-full pulsing" />
                 </div>
 
-                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg p-6 hover-lift border-2 group`}>
+                <div className="bg-gray-800 border-2 border-blue-500/20 rounded-lg p-6 hover-lift group hover:border-blue-500/60">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <div className="text-emerald-400 font-semibold text-sm mb-1 flex items-center gap-2">
+                      <div className="text-blue-400 font-semibold text-sm mb-1 flex items-center gap-2">
                         <Calendar size={14} />
                         {achievement.year}
                       </div>
-                      <h3 className="text-xl font-bold group-hover:text-emerald-400 transition-colors">
+                      <h3 className="text-xl font-bold group-hover:text-blue-400 transition-colors">
                         {achievement.title}
                       </h3>
                     </div>
-                    <ChevronRight className="text-gray-500 group-hover:text-emerald-400 group-hover:translate-x-2 transition-all" />
+                    <ChevronRight className="text-gray-500 group-hover:text-blue-400 group-hover:translate-x-2 transition-all" />
                   </div>
-                  <div className="text-cyan-400 mb-2 font-medium">{achievement.org}</div>
+                  <div className="text-purple-400 mb-2 font-medium">{achievement.org}</div>
                   <p className="text-gray-500 text-sm leading-relaxed">{achievement.description}</p>
                 </div>
               </div>
@@ -851,9 +1147,9 @@ const Portfolio = () => {
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold gradient-text mb-4">Moments in Action</h2>
             <p className="text-gray-400 text-lg flex items-center justify-center gap-2">
-              <Sparkles size={20} className="text-emerald-400" /> 
+              <Sparkles size={20} className="text-blue-400" /> 
               Hover to explore • Navigate with arrows or dots
-              <Sparkles size={20} className="text-cyan-400" />
+              <Sparkles size={20} className="text-purple-400" />
             </p>
           </div>
 
@@ -864,7 +1160,7 @@ const Portfolio = () => {
             
             <button 
               onClick={() => setActiveCard(prev => (prev - 1 + galleryImages.length) % galleryImages.length)} 
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-800/80 hover:bg-emerald-500/80 transition-all z-20 hover:scale-110 backdrop-blur-sm"
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-800/80 hover:bg-blue-500/80 transition-all z-20 hover:scale-110 backdrop-blur-sm"
               aria-label="Previous image"
             >
               <ChevronLeft size={24} className="text-white" />
@@ -872,7 +1168,7 @@ const Portfolio = () => {
             
             <button 
               onClick={() => setActiveCard(prev => (prev + 1) % galleryImages.length)} 
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-800/80 hover:bg-emerald-500/80 transition-all z-20 hover:scale-110 backdrop-blur-sm"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-800/80 hover:bg-blue-500/80 transition-all z-20 hover:scale-110 backdrop-blur-sm"
               aria-label="Next image"
             >
               <ChevronRight size={24} className="text-white" />
@@ -888,10 +1184,10 @@ const Portfolio = () => {
       </section>
 
       {/* Skills Section */}
-      <section id="skills" className={`py-32 px-6 ${darkMode ? 'bg-gray-800/50' : 'bg-gray-100'}`}>
+      <section id="skills" className="py-32 px-6 bg-gray-800/50">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
-            <Terminal className="text-emerald-400" size={32} />
+            <Terminal className="text-blue-400" size={32} />
             <h2 className="text-5xl font-bold gradient-text">Technical Arsenal</h2>
           </div>
 
@@ -924,43 +1220,16 @@ const Portfolio = () => {
             ))}
           </div>
 
-          {/* Skill Bars */}
-          <div className="grid md:grid-cols-2 gap-8">
+          {/* Skill Cards Grid - 4 columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {skills.map((skill, i) => (
-              <div
+              <SkillCard 
                 key={i}
-                className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg p-6 border-2 hover-lift group`}
-                style={{
-                  animation: `slideUp 0.6s ease-out forwards`,
-                  animationDelay: `${i * 0.1}s`,
-                  opacity: 0
-                }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    {!imageErrors[`skill-${i}`] ? (
-                      <img 
-                        src={skill.iconSrc} 
-                        alt={skill.name} 
-                        className="skill-icon group-hover:scale-110 transition-transform"
-                        onError={() => handleImageError(`skill-${i}`)}
-                      />
-                    ) : (
-                      <span className="text-2xl">{skill.fallback}</span>
-                    )}
-                    <span className="font-semibold text-lg group-hover:text-emerald-400 transition-colors">
-                      {skill.name}
-                    </span>
-                  </div>
-                  <span className="text-emerald-400 font-bold text-lg">{skill.level}%</span>
-                </div>
-                <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className={`skill-bar h-full bg-gradient-to-r ${skill.color} rounded-full shadow-lg`} 
-                    style={{ width: `${skill.level}%` }} 
-                  />
-                </div>
-              </div>
+                skill={skill}
+                imageErrors={imageErrors}
+                handleImageError={handleImageError}
+                index={i}
+              />
             ))}
           </div>
         </div>
@@ -976,65 +1245,69 @@ const Portfolio = () => {
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 mb-12">
-            <a 
-              href="mailto:shanavasvbasheer@gmail.com" 
-              className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-8 py-6 rounded-lg hover-lift flex items-center gap-4 border-2 group text-left`}
+            <button 
+              onClick={() => copyToClipboard('shanavasvbasheer@gmail.com')}
+              className="bg-gray-800 border-2 border-blue-500/20 px-8 py-6 rounded-lg hover-lift flex items-center gap-4 group hover:border-blue-500/60 text-left relative overflow-hidden"
             >
-              <div className="p-3 bg-emerald-500/20 rounded-lg group-hover:bg-emerald-500/30 transition-colors">
-                <Mail className="text-emerald-400 group-hover:scale-125 transition-transform" size={24} />
+              <div className="p-3 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
+                <Mail className="text-blue-400 group-hover:scale-125 transition-transform" size={24} />
               </div>
-              <div>
+              <div className="flex-1">
                 <div className="text-xs text-gray-500 mb-1">Email</div>
-                <div className="font-semibold group-hover:text-emerald-400 transition-colors">
+                <div className="font-semibold group-hover:text-blue-400 transition-colors">
                   shanavasvbasheer@gmail.com
                 </div>
               </div>
-            </a>
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                {copiedEmail ? <Check size={20} className="text-green-400" /> : <Copy size={20} className="text-gray-400" />}
+              </div>
+            </button>
 
             <a 
               href="tel:+918547363158" 
-              className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-8 py-6 rounded-lg hover-lift flex items-center gap-4 border-2 group text-left`}
+              className="bg-gray-800 border-2 border-blue-500/20 px-8 py-6 rounded-lg hover-lift flex items-center gap-4 border group hover:border-blue-500/60 text-left"
             >
-              <div className="p-3 bg-cyan-500/20 rounded-lg group-hover:bg-cyan-500/30 transition-colors">
-                <Phone className="text-cyan-400 group-hover:scale-125 transition-transform" size={24} />
+              <div className="p-3 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
+                <Phone className="text-purple-400 group-hover:scale-125 transition-transform" size={24} />
               </div>
               <div>
                 <div className="text-xs text-gray-500 mb-1">Phone</div>
-                <div className="font-semibold group-hover:text-cyan-400 transition-colors">
+                <div className="font-semibold group-hover:text-purple-400 transition-colors">
                   +91 85473 63158
                 </div>
               </div>
             </a>
           </div>
 
-          <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-gray-100'} rounded-lg p-8 border-2 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="bg-gray-800/50 rounded-lg p-8 border-2 border-blue-500/20">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <MapPin size={20} className="text-emerald-400" />
+              <MapPin size={20} className="text-blue-400" />
               <p className="text-gray-400">Based in Kochi, Kerala, India</p>
             </div>
             <p className="text-gray-500 text-sm mb-2">
               Currently pursuing M.Voc in Software Application Development at CUSAT
             </p>
             <div className="flex items-center justify-center gap-2 mt-4">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-emerald-400 text-sm font-medium">Available for opportunities</span>
+              <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+              <span className="text-blue-400 text-sm font-medium">Available for opportunities</span>
             </div>
           </div>
 
           <div className="mt-12">
             <button 
               onClick={handleResumeDownload}
-              className="px-10 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer mx-auto"
+              className="px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer mx-auto group"
             >
-              <Download size={20} /> Download Resume
+              <Download size={20} className="group-hover:animate-bounce" /> Download Resume
             </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-200 border-gray-300'} py-12 px-6 text-center border-t-2`}>
+      <footer className="bg-gray-800 border-t-2 border-blue-500/20 py-12 px-6 text-center">
         <div className="max-w-7xl mx-auto">
+          {/* Social Links */}
           <div className="flex justify-center gap-8 mb-8">
             {[
               { icon: Github, href: "https://github.com/shanavasvbasheer", label: "GitHub" },
@@ -1046,26 +1319,44 @@ const Portfolio = () => {
                 href={href} 
                 target={href.includes('http') ? "_blank" : undefined} 
                 rel={href.includes('http') ? "noopener noreferrer" : undefined}
-                className="p-3 rounded-full hover:bg-emerald-500/20 transition-all hover:scale-125"
+                className="p-3 rounded-full hover:bg-blue-500/20 transition-all hover:scale-125 hover:rotate-12"
                 aria-label={label}
               >
-                <Icon size={24} />
+                <Icon size={24} className="text-gray-400 hover:text-blue-400 transition-colors" />
               </a>
             ))}
           </div>
           
-          <p className="text-gray-500 mb-3 font-medium">
-            © 2025 Shanavas V Basheer. Crafted with passion and precision.
-          </p>
-          
-          <p className="text-sm text-gray-600 flex items-center justify-center gap-2 mb-4">
-            <Zap size={16} className="text-emerald-400" /> 
-            Build. Break. Better. 
-            <Rocket size={16} className="text-cyan-400" />
-          </p>
-          
-          <div className="text-xs text-gray-500">
-            <p>Built with React, Tailwind CSS, and Lucide Icons</p>
+          {/* Copyright and Credits */}
+          <div className="space-y-3 border-t border-gray-700 pt-8">
+            <p className="text-gray-400 mb-3 font-medium">
+              © 2025 Shanavas V Basheer. All rights reserved.
+            </p>
+            
+            <p className="text-sm text-gray-500 flex items-center justify-center gap-2 mb-4">
+              <Zap size={16} className="text-blue-400" /> 
+              Build. Break. Better. 
+              <Rocket size={16} className="text-purple-400" />
+            </p>
+            
+            <div className="text-xs text-gray-600 space-y-1">
+              <p>🚀 Built with React, Tailwind CSS, and Lucide Icons</p>
+              <p>💾 Last Updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p className="text-blue-400/70">🔧 Interactive Terminal • Card-Based Skills • Blue/Purple/Pink Theme</p>
+            </div>
+          </div>
+
+          {/* Quick Navigation */}
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            {['projects', 'achievements', 'gallery', 'skills', 'contact'].map((item) => (
+              <a
+                key={item}
+                href={`#${item}`}
+                className="text-xs text-gray-500 hover:text-blue-400 transition-colors uppercase font-semibold tracking-wider"
+              >
+                {item}
+              </a>
+            ))}
           </div>
         </div>
       </footer>
