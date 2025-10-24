@@ -27,7 +27,6 @@ import {
 // Constants
 const ANIMATION_DELAY_INCREMENT = 0.15;
 const GALLERY_AUTO_ROTATE_INTERVAL = 5000;
-const CURSOR_BLINK_SPEED = 530;
 const SCROLL_THRESHOLD = 150;
 const MOUSE_PARALLAX_INTENSITY = 15;
 const THROTTLE_DELAY = 16; // ~60fps
@@ -358,7 +357,6 @@ const SkillCard = ({ skill, imageErrors, handleImageError, index }) => {
 const Portfolio = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [cursorVisible, setCursorVisible] = useState(true);
   const [activeSection, setActiveSection] = useState('hero');
   const [activeCard, setActiveCard] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -393,14 +391,6 @@ const Portfolio = () => {
       return () => window.removeEventListener('mousemove', handleMouseMove);
     }
   }, [handleMouseMove, isMobile]);
-
-  // Cursor blink effect
-  useEffect(() => {
-    const cursor = setInterval(() => {
-      setCursorVisible(v => !v);
-    }, CURSOR_BLINK_SPEED);
-    return () => clearInterval(cursor);
-  }, []);
 
   // Scroll progress and active section detection
   useEffect(() => {
@@ -1304,7 +1294,7 @@ const Portfolio = () => {
         </div>
       </section>
 
-      {/* Footer */}
+   {/* Footer */}
       <footer className="bg-gray-800 border-t-2 border-blue-500/20 py-12 px-6 text-center">
         <div className="max-w-7xl mx-auto">
           {/* Social Links */}
