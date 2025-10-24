@@ -698,22 +698,13 @@ const Portfolio = () => {
             <p className="mb-2">Currently pursuing M.Voc in Software Application Development at CUSAT</p>
             <p className="flex items-center justify-center gap-2">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              Based in Kozhikode, Kerala, India
+              Based in Kochi, Kerala, India
             </p>
           </div>
         </div>
       </section>
 
-      <footer className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-200 border-gray-300'} py-8 px-6 text-center border-t-2`}>
-        <p className="text-gray-500 mb-2">
-          © 2025 Shanavas V Basheer. Built with React & Love.
-        </p>
-        <p className="text-sm text-gray-600 flex items-center justify-center gap-2">
-          <Zap size={16} className="text-emerald-400" />
-          Build. Break. Better.
-          <Rocket size={16} className="text-cyan-400" />
-        </p>
-      </footer>
+
     </div>
   );
 };
