@@ -11,7 +11,7 @@ const Portfolio = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const RESUME_FILE_ID = "1cb09ib9y-J_S5h6rmALXIbVDyv9A1bdQ";
-  const RESUME_VIEW_URL = `https://drive.google.com/file/d/${RESUME_FILE_ID}/view?usp=sharing`;
+  const RESUME_VIEW_URL = `https://drive.google.com/file/d/1iz3l8jgJFmuN9HsQwFwWVVZ-MGw5zmlU/view?usp=drive_link`;
 
   const fullText = "shanavas@portfolio:~$ whoami";
 
