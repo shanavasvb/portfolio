@@ -1330,9 +1330,6 @@ const Portfolio = () => {
             </p>
             
             <div className="text-xs text-gray-600 space-y-1">
-              <p>🚀 Built with React, Tailwind CSS, and Lucide Icons</p>
-              <p>💾 Last Updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p className="text-blue-400/70">🔧 Interactive Terminal • Card-Based Skills • Blue/Purple/Pink Theme</p>
             </div>
           </div>
 
