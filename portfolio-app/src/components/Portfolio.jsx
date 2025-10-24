@@ -83,45 +83,44 @@ const Portfolio = () => {
   };
 
   const projects = useMemo(() => [
-    {
-      title: "HomeServer Frontend",
-      description: "Secure personal cloud storage system with JWT authentication and responsive UI",
-      tech: ["React", "JWT", "REST API"],
-      features: "Modern UI/UX with cross-device compatibility",
-      icon: "🏠"
-    },
-    {
-      title: "Barcode Product Processor",
-      description: "Automated barcode data extraction with AI-powered categorization",
-      tech: ["Python", "Gemini AI", "OpenFoodFacts"],
-      features: "Offline caching & batch processing for large datasets",
-      icon: "📦"
-    },
-    {
-      title: "Family Directory",
-      description: "Web-based family app with profiles, events, and messaging",
-      tech: ["React", "Node.js", "MongoDB"],
-      features: "Privacy-focused with responsive design",
-      icon: "👨‍👩‍👧‍👦"
-    }
-  ], []);
-
+  {
+    title: "HomeServer Frontend",
+    description: "Secure personal cloud storage system with file upload/download and JWT-based authentication",
+    tech: ["React", "JWT", "REST API"],
+    features: "Responsive UI with cross-device compatibility",
+    repo: "https://github.com/shanavasvb/Home-Server"
+  },
+  {
+    title: "Barcode Product Processor",
+    description: "Automated barcode data extraction from Excel with OpenFoodFacts, Google APIs, and DigiTeyes integration",
+    tech: ["Python", "Gemini AI", "MongoDB"],
+    features: "AI-based categorization with offline caching & batch processing",
+    repo: "https://github.com/shanavasvb/product-details-project-script"
+  },
+  {
+    title: "Family Directory",
+    description: "Android-based family directory app with member profiles, event scheduling, and admin panel",
+    tech: ["Kotlin", "Jetpack Compose", "Firebase"],
+    features: "Bilingual UI (Malayalam/English) with real-time data sync",
+    repo: "https://github.com/shanavasvb/familydirectory"
+  }
+], []);
   const achievements = useMemo(() => [
-    { year: "2025", title: "Software Development Intern", org: "Datcarts", description: "Built scalable product management system for 6 supermarket chains" },
-    { year: "2024", title: "Technical Workshop", org: "UC College TechFest", description: "Conducted modern web development workshop" },
-    { year: "2024", title: "Competition Winner", org: "Kerala Colleges", description: "Won coding, web design, and debugging competitions" },
+    { year: "2025", title: "Software Development Intern", org: "Datcarts", description: "Built supermarket product management system processing 10,000+ entries with 40% efficiency improvement" },
+    { year: "2024", title: "Technical Workshop", org: "UC College TechFest", description: "Conducted workshop on modern web development" },
+    { year: "2024", title: "Competition Winner", org: " Colleges across Kerala", description: "Won coding, typing, web design, and debugging competitions" },
     { year: "2023", title: "KKEM Bootcamp", org: "Kerala Knowledge Economy Mission", description: "Completed software development bootcamp" }
   ], []);
 
   const skills = useMemo(() => [
-    { name: "C++", level: 95, icon: "💻", color: "from-blue-500 to-blue-600" },
-    { name: "JavaScript", level: 95, icon: "🚀", color: "from-yellow-500 to-yellow-600" },
-    { name: "React", level: 90, icon: "⚛️", color: "from-cyan-500 to-cyan-600" },
-    { name: "Node.js", level: 85, icon: "🟢", color: "from-green-500 to-green-600" },
-    { name: "MongoDB", level: 90, icon: "🍃", color: "from-emerald-500 to-emerald-600" },
-    { name: "Python", level: 85, icon: "🐍", color: "from-blue-400 to-blue-500" },
-    { name: "Swift", level: 70, icon: "🍎", color: "from-orange-500 to-orange-600" },
-    { name: "AWS", level: 75, icon: "☁️", color: "from-orange-400 to-orange-500" }
+    { name: "C++", level: 95, color: "from-blue-500 to-blue-600" },
+    { name: "JavaScript", level: 95, color: "from-yellow-500 to-yellow-600" },
+    { name: "React", level: 90,color: "from-cyan-500 to-cyan-600" },
+    { name: "Node.js", level: 90, color: "from-green-500 to-green-600" },
+    { name: "MongoDB", level: 90, color: "from-emerald-500 to-emerald-600" },
+    { name: "Python", level: 85, color: "from-blue-400 to-blue-500" },
+    { name: "Swift", level: 75,  color: "from-orange-500 to-orange-600" },
+    { name: "Kotlin", level: 75, color: "from-purple-500 to-purple-600" }
   ], []);
 
   const galleryImages = useMemo(() => [
@@ -144,14 +143,13 @@ const Portfolio = () => {
 
     return (
       <div 
-        className={`relative h-96 w-full max-w-2xl mx-auto overflow-hidden rounded-2xl cursor-pointer transition-all duration-700 ${
-          isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-95 absolute inset-0'
+        className={`absolute inset-0 h-96 w-full max-w-2xl mx-auto overflow-hidden rounded-2xl cursor-pointer transition-all duration-700 ${
+          isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
         }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
-          transform: isActive ? 'translateZ(0)' : 'translateZ(-100px)',
-          transition: 'opacity 700ms ease-in-out, transform 700ms ease-in-out, scale 700ms ease-in-out'
+          transition: 'opacity 700ms ease-in-out, z-index 0ms linear'
         }}
       >
         <div 
@@ -491,32 +489,41 @@ const Portfolio = () => {
             <Code className="text-emerald-400" size={32} />
             <h2 className="text-5xl font-bold gradient-text">What I've Built</h2>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {projects.map((project, i) => (
-              <div
-                key={i}
-                className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl p-8 hover-lift border-2 group`}
-                style={{ 
-                  animation: `slideUp 0.6s ease-out forwards`,
-                  animationDelay: `${i * 0.2}s`,
-                  opacity: 0
-                }}
-              >
-                <div className="text-6xl mb-4 group-hover:scale-125 transition-transform duration-300">{project.icon}</div>
-                <h3 className="text-2xl font-bold mb-4 text-emerald-400 group-hover:text-cyan-400 transition-colors">{project.title}</h3>
-                <p className="text-gray-400 mb-6">{project.description}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.tech.map((tech, j) => (
-                    <span key={j} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm hover:bg-emerald-500/30 transition-colors">
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-sm text-gray-500 italic">{project.features}</p>
-              </div>
-            ))}
-          </div>
+<div className="grid md:grid-cols-3 gap-8">
+  {projects.map((project, i) => (
+    <div
+      key={i}
+      className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl p-8 hover-lift border-2 group`}
+      style={{
+        animation: `slideUp 0.6s ease-out forwards`,
+        animationDelay: `${i * 0.2}s`,
+        opacity: 0
+      }}
+    >
+      <div className="text-6xl mb-4 group-hover:scale-125 transition-transform duration-300">{project.icon}</div>
+      <h3 className="text-2xl font-bold mb-4 text-emerald-400 group-hover:text-cyan-400 transition-colors">{project.title}</h3>
+      <p className="text-gray-400 mb-6">{project.description}</p>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {project.tech.map((tech, j) => (
+          <span key={j} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm hover:bg-emerald-500/30 transition-colors">
+            {tech}
+          </span>
+        ))}
+      </div>
+      <p className="text-sm text-gray-500 italic">{project.features}</p>
+      <a
+        href={project.repo}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 mt-4 text-emerald-500 hover:text-cyan-500 font-medium"
+      >
+        <Github size={18} />
+        View GitHub
+      </a>
+    </div>
+  ))}
+</div>
+   
         </div>
       </section>
 
@@ -638,7 +645,7 @@ const Portfolio = () => {
           <div className="mt-16 text-center">
             <h3 className="text-2xl font-bold mb-6 gradient-text">Also Experienced With</h3>
             <div className="flex flex-wrap gap-3 justify-center">
-              {["Express.js", "REST APIs", "Git", "Firebase", "EC2", "S3", "SwiftUI", "Kotlin"].map((tech, i) => (
+              {["Express.js", "REST APIs", "Git", "Firebase", "AWS EC2", "AWS S3", "SwiftUI", "Jetpack Compose"].map((tech, i) => (
                 <span 
                   key={i} 
                   className="px-4 py-2 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border-2 border-emerald-500/30 rounded-lg text-sm font-medium hover:border-emerald-500/60 hover:scale-110 transition-all cursor-pointer hover:shadow-lg hover:shadow-emerald-500/30"
