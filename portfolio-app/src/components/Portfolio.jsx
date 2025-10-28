@@ -419,19 +419,19 @@ const Portfolio = () => {
   // Gallery images
   const galleryImages = useMemo(() => [
     {
-      url: "/images/achievement1.jpg",
+      url: "/images/takshak.jpeg",
       caption: "Coding Competition 2024",
       award: "1st Place",
       description: "Won first place in regional coding competition with optimal algorithmic solutions and efficient problem-solving approaches"
     },
     {
-      url: "/images/achievement2.jpg",
+      url: "/images/kmm1.jpeg",
       caption: "Project Showcase Event",
       award: "Featured Project",
       description: "Showcased innovative full-stack development projects at the college technical festival with live demonstrations"
     },
     {
-      url: "/images/achievement3.jpg",
+      url: "/images/rajagiri.jpeg",
       caption: "Technical Workshop 2024",
       award: "Speaker",
       description: "Conducted hands-on workshop on modern web development practices and cloud architecture for 100+ students"
@@ -894,7 +894,7 @@ const Portfolio = () => {
         aria-label="Main navigation"
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold gradient-text">SVB</div>
+          <div className="text-2xl font-bold gradient-text">Shanavas</div>
           <div className="flex gap-6 items-center">
             {['projects','achievements','gallery','skills','contact'].map(item => (
               <a 
@@ -1167,9 +1167,7 @@ const Portfolio = () => {
 
           <CarouselNav />
 
-          <p className="text-center text-gray-500 text-sm mt-12 italic flex items-center justify-center gap-2">
-            ✨ Auto-rotates every 5 seconds • Click dots to jump to specific moments ✨
-          </p>
+         
         </div>
       </section>
 
