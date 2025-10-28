@@ -420,21 +420,21 @@ const Portfolio = () => {
   const galleryImages = useMemo(() => [
     {
       url: "/images/takshak.jpeg",
-      caption: "Coding Competition 2024",
+      caption: "Web designing at MA College of Engineering, Kothamangalam in Takshak 2025",
       award: "1st Place",
       description: "Won first place in regional coding competition with optimal algorithmic solutions and efficient problem-solving approaches"
     },
     {
       url: "/images/kmm1.jpeg",
-      caption: "Project Showcase Event",
-      award: "Featured Project",
-      description: "Showcased innovative full-stack development projects at the college technical festival with live demonstrations"
+      caption: "Coding Competition in KMM College Thrikakara",
+      award: "First Prize",
+      description: " Recieved first prize in inter-college coding competition  conducted at KMM College of Arts & Science "
     },
     {
       url: "/images/rajagiri.jpeg",
-      caption: "Technical Workshop 2024",
-      award: "Speaker",
-      description: "Conducted hands-on workshop on modern web development practices and cloud architecture for 100+ students"
+      caption: "Coding Competition Conducted at Rajagiri College in Inceptra 2024",
+      award: "First Prize",
+      description: "Recieved first prize in inter-college coding competition  "
     }
   ], []);
 
