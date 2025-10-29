@@ -1450,11 +1450,7 @@ const Portfolio = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold gradient-text mb-4">Moments in Action</h2>
-            <p className="text-gray-400 text-lg flex items-center justify-center gap-2">
-              <Sparkles size={20} className="text-cyan-400" /> 
-              Hover to explore • Navigate with arrows or dots
-              <Sparkles size={20} className="text-purple-400" />
-            </p>
+        
           </div>
 
           <div className="relative h-96">
