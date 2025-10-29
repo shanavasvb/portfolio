@@ -1008,7 +1008,6 @@ const Portfolio = () => {
         .gradient-text { 
           background: linear-gradient(90deg, #06B6D4, #8B5CF6, #EC4899); 
           background-size: 200% 200%; 
-          animation: shimmer 3s linear infinite; 
           -webkit-background-clip: text; 
           -webkit-text-fill-color: transparent; 
           background-clip: text; 
@@ -1168,7 +1167,7 @@ const Portfolio = () => {
         aria-label="Main navigation"
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold gradient-text">
+          <div className="text-xl font-bold gradient-text">
             Shanavas
           </div>
           
