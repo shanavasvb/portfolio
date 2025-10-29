@@ -24,14 +24,44 @@ import {
   Check
 } from 'lucide-react';
 
-// Constants
+// ============================================================================
+// CONSTANTS & CONFIGURATION
+// ============================================================================
+
 const ANIMATION_DELAY_INCREMENT = 0.15;
 const GALLERY_AUTO_ROTATE_INTERVAL = 5000;
 const SCROLL_THRESHOLD = 150;
 const MOUSE_PARALLAX_INTENSITY = 15;
 const THROTTLE_DELAY = 16; // ~60fps
 
-// Utility: Throttle function
+// Modern Color Palette - Cyan, Purple, Pink
+const COLOR_THEME = {
+  bg: {
+    primary: '#0A0F1E',      // Deep space blue
+    secondary: '#141B2D',    // Rich navy
+    card: '#1A2332',         // Card background
+    hover: '#202A3F'         // Hover state
+  },
+  accent: {
+    cyan: '#06B6D4',         // Vibrant cyan
+    purple: '#8B5CF6',       // Rich purple
+    pink: '#EC4899',         // Hot pink
+    emerald: '#10B981'       // Success green
+  },
+  text: {
+    primary: '#F1F5F9',      // Off-white
+    secondary: '#94A3B8',    // Muted gray
+    muted: '#64748B'         // Very muted
+  }
+};
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Throttle function to limit function calls
+ */
 const throttle = (func, delay) => {
   let timeoutId;
   let lastRan;
@@ -51,7 +81,51 @@ const throttle = (func, delay) => {
   };
 };
 
-// Interactive Terminal Component
+/**
+ * Custom hook for magnetic button effect
+ */
+const useMagneticEffect = () => {
+  const buttonRef = useRef(null);
+  
+  useEffect(() => {
+    const button = buttonRef.current;
+    if (!button) return;
+
+    const handleMouseMove = (e) => {
+      const rect = button.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      
+      button.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+    };
+    
+    const handleMouseLeave = () => {
+      button.style.transform = 'translate(0, 0)';
+    };
+
+    button.addEventListener('mousemove', handleMouseMove);
+    button.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      button.removeEventListener('mousemove', handleMouseMove);
+      button.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  return buttonRef;
+};
+
+/**
+ * Check if user prefers reduced motion
+ */
+const prefersReducedMotion = () => {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
+
+// ============================================================================
+// INTERACTIVE TERMINAL COMPONENT
+// ============================================================================
+
 const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownload }) => {
   const [inputValue, setInputValue] = useState('');
   const [history, setHistory] = useState(['Type "help" to see available commands']);
@@ -65,17 +139,17 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
       description: 'Show all available commands',
       execute: () => [
         '📋 Available Commands:',
-        '─────────────────────────',
-        'help              - Show this help message',
+        '─────────────────────────────────────',
         'whoami            - Display your information',
         'skills            - Navigate to skills section',
         'projects          - Navigate to projects section',
         'achievements      - Navigate to achievements section',
+        'gallery           - Navigate to gallery section',
         'contact           - Navigate to contact section',
         'resume view       - Open resume in new tab',
         'resume dl         - Download resume',
         'clear             - Clear terminal screen',
-        '─────────────────────────',
+        '─────────────────────────────────────',
         '💡 Tip: Use arrow keys to navigate command history'
       ]
     },
@@ -83,7 +157,7 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
       description: 'Display your information',
       execute: () => [
         '👤 Shanavas V Basheer',
-        '─────────────────────────',
+        '─────────────────────────────────────',
         '📍 Location: Kochi, Kerala, India',
         '🎓 Education: M.Voc in Software Application Development (CUSAT)',
         '💼 Role: Full-Stack Developer | Competitive Coder',
@@ -91,7 +165,7 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
         '📱 Phone: +91 85473 63158',
         '💻 GitHub: github.com/shanavasvbasheer',
         '🔗 LinkedIn: linkedin.com/in/shanavasvbasheer',
-        '─────────────────────────',
+        '─────────────────────────────────────',
         '✨ Status: Available for opportunities'
       ]
     },
@@ -114,6 +188,13 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
       execute: () => {
         onNavigate('achievements');
         return ['✅ Navigating to Achievements section...'];
+      }
+    },
+    gallery: {
+      description: 'Navigate to gallery section',
+      execute: () => {
+        onNavigate('gallery');
+        return ['✅ Navigating to Gallery section...'];
       }
     },
     contact: {
@@ -205,19 +286,19 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
   }, [history]);
 
   return (
-    <div className="w-full rounded-xl overflow-hidden shadow-2xl border-2 border-blue-500/30 hover:border-blue-500/60 transition-all">
-      {/* Traffic Light Buttons */}
+    <div className="w-full rounded-2xl overflow-hidden shadow-2xl border-2 border-cyan-500/40 hover:border-cyan-500/80 transition-all duration-300 hover:shadow-cyan-500/30 hover:shadow-2xl bg-gray-900 group">
+      {/* Terminal Header with Traffic Lights */}
       <div className="bg-gray-800 px-4 py-3 flex gap-3 items-center border-b border-gray-700">
         <div className="flex gap-2">
           <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 cursor-pointer transition-colors" title="Close" />
           <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer transition-colors" title="Minimize" />
-          <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 cursor-pointer transition-colors" title="Maximize" />
+          <div className="w-3 h-3 rounded-full bg-emerald-500 hover:bg-emerald-600 cursor-pointer transition-colors" title="Maximize" />
         </div>
         <div className="ml-4 text-gray-400 text-sm font-mono flex-1">Portfolio Terminal</div>
-        <Terminal size={16} className="text-blue-400" />
+        <Terminal size={16} className="text-cyan-400 group-hover:scale-110 transition-transform" />
       </div>
 
-      {/* Terminal Content */}
+      {/* Terminal Content Area */}
       <div
         ref={terminalRef}
         className="bg-gray-900 p-6 font-mono text-sm h-96 overflow-y-auto scrollbar-hide text-gray-100"
@@ -225,11 +306,11 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
         {history.map((line, i) => (
           <div
             key={i}
-            className={`${
-              line.startsWith('$') ? 'text-blue-400 font-semibold' :
-              line.startsWith('✅') ? 'text-green-400' :
+            className={`transition-colors duration-300 ${
+              line.startsWith('$') ? 'text-cyan-400 font-semibold' :
+              line.startsWith('✅') ? 'text-emerald-400' :
               line.startsWith('❌') ? 'text-red-400' :
-              line.startsWith('📋') || line.startsWith('👤') || line.startsWith('─') ? 'text-cyan-400' :
+              line.startsWith('📋') || line.startsWith('👤') || line.startsWith('─') ? 'text-cyan-300' :
               'text-gray-100'
             }`}
             style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
@@ -239,9 +320,9 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
         ))}
       </div>
 
-      {/* Terminal Input */}
+      {/* Terminal Input Line */}
       <div className="bg-gray-800 px-6 py-4 border-t border-gray-700 flex items-center gap-2">
-        <span className="text-blue-400 font-mono font-semibold">svb@portfolio:~$</span>
+        <span className="text-cyan-400 font-mono font-semibold">svb@portfolio:~$</span>
         <input
           ref={inputRef}
           type="text"
@@ -249,7 +330,7 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a command..."
-          className="flex-1 bg-transparent outline-none text-white font-mono placeholder-gray-600 focus:placeholder-gray-500 transition-colors"
+          className="flex-1 bg-transparent outline-none text-white font-mono placeholder-gray-600 focus:placeholder-gray-500 transition-colors caret-cyan-400"
           autoFocus
         />
       </div>
@@ -257,45 +338,51 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
   );
 };
 
-// Skill Card Component
+// ============================================================================
+// ENHANCED SKILL CARD COMPONENT
+// ============================================================================
+
 const SkillCard = ({ skill, imageErrors, handleImageError, index }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <div
-      className="group relative overflow-hidden rounded-xl p-8 bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-blue-500/20 hover:border-blue-500/60 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 cursor-pointer"
+      className="group relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-2 border-cyan-500/20 hover:border-cyan-500/70 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/25 cursor-pointer"
       style={{
         animation: `slideUp 0.6s ease-out forwards`,
         animationDelay: `${index * 0.1}s`,
-        opacity: 0
+        opacity: 0,
+        contain: 'layout style paint'
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Background gradient on hover */}
+      {/* Animated Background Gradient Overlay */}
       <div
-        className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
       />
 
-      {/* Content */}
+      {/* Card Content */}
       <div className="relative z-10">
-        {/* Icon Container */}
+        {/* Icon Container with Advanced Animation */}
         <div
           className="mb-6 flex justify-center"
           style={{
             transform: isHovered ? 'scale(1.15) translateY(-8px)' : 'scale(1)',
-            transition: 'transform 0.3s ease-out'
+            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            willChange: 'transform'
           }}
         >
           {!imageErrors[`skill-${index}`] ? (
             <img
               src={skill.iconSrc}
               alt={skill.name}
-              className="w-16 h-16 object-contain drop-shadow-lg"
+              className="w-16 h-16 object-contain drop-shadow-lg filter hover:brightness-125 transition-all"
+              loading="lazy"
               onError={() => handleImageError(`skill-${index}`)}
             />
           ) : (
-            <div className="w-16 h-16 flex items-center justify-center text-4xl">
+            <div className="w-16 h-16 flex items-center justify-center text-4xl bg-cyan-500/10 rounded-lg">
               {skill.fallback}
             </div>
           )}
@@ -303,7 +390,7 @@ const SkillCard = ({ skill, imageErrors, handleImageError, index }) => {
 
         {/* Skill Name */}
         <h3
-          className="text-xl font-bold text-center mb-3 text-white group-hover:text-blue-400 transition-colors duration-300"
+          className="text-xl font-bold text-center mb-3 text-white group-hover:text-cyan-400 transition-colors duration-300"
         >
           {skill.name}
         </h3>
@@ -311,28 +398,29 @@ const SkillCard = ({ skill, imageErrors, handleImageError, index }) => {
         {/* Proficiency Percentage */}
         <div className="text-center mb-4">
           <span
-            className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+            className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
           >
             {skill.level}%
           </span>
         </div>
 
-        {/* Progress Bar */}
-        <div className="h-2 bg-gray-700 rounded-full overflow-hidden mb-3">
+        {/* Enhanced Progress Bar */}
+        <div className="h-2 bg-gray-700/50 rounded-full overflow-hidden mb-3 border border-gray-600/30">
           <div
-            className={`h-full bg-gradient-to-r ${skill.color} rounded-full shadow-lg transition-all duration-1000 ease-out`}
+            className={`h-full bg-gradient-to-r ${skill.color} rounded-full transition-all duration-1000 ease-out`}
             style={{
               width: isHovered ? `${skill.level}%` : '0%',
-              boxShadow: isHovered ? `0 0 20px rgba(59, 130, 246, 0.6)` : 'none'
+              boxShadow: isHovered ? `0 0 20px rgba(6, 182, 212, 0.8), 0 0 40px rgba(139, 92, 246, 0.4)` : 'none',
+              willChange: 'width'
             }}
           />
         </div>
 
-        {/* Proficiency Label */}
+        {/* Proficiency Badge */}
         <p
           className={`text-xs text-center font-semibold transition-all duration-300 ${
-            skill.level >= 90 ? 'text-green-400' :
-            skill.level >= 75 ? 'text-blue-400' :
+            skill.level >= 90 ? 'text-emerald-400' :
+            skill.level >= 75 ? 'text-cyan-400' :
             'text-purple-400'
           }`}
         >
@@ -340,19 +428,177 @@ const SkillCard = ({ skill, imageErrors, handleImageError, index }) => {
         </p>
       </div>
 
-      {/* Border gradient on hover */}
+      {/* Border Glow Effect on Hover */}
       <div
-        className="absolute inset-0 rounded-xl pointer-events-none transition-all duration-300"
+        className="absolute inset-0 rounded-2xl pointer-events-none transition-all duration-300"
         style={{
-          borderRadius: '0.75rem',
+          borderRadius: '1rem',
           background: isHovered
-            ? `linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2))`
-            : 'none'
+            ? `linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.15), rgba(236, 72, 153, 0.15))`
+            : 'none',
+          boxShadow: isHovered ? 'inset 0 0 30px rgba(6, 182, 212, 0.1)' : 'none'
         }}
       />
     </div>
   );
 };
+
+// ============================================================================
+// SLIDING GALLERY CARD COMPONENT
+// ============================================================================
+
+const SlidingCard = React.memo(({ image, isActive }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div
+      className={`absolute inset-0 h-96 w-full max-w-2xl mx-auto overflow-hidden rounded-2xl cursor-pointer transition-all duration-700 ${
+        isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+      }`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        transition: 'opacity 700ms ease-in-out, z-index 0ms linear'
+      }}
+    >
+      {/* Image Container with Scale Effect */}
+      <div
+        className="absolute inset-0 overflow-hidden bg-gray-800"
+        style={{
+          transform: isHovered ? 'scale(1.12)' : 'scale(1)',
+          transition: 'transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        }}
+      >
+        {!imgError ? (
+          <img
+            src={image.url}
+            alt={image.caption}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-900/50 to-purple-900/50">
+            <Award size={64} className="text-cyan-400 opacity-50" />
+          </div>
+        )}
+      </div>
+
+      {/* Gradient Overlay */}
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"
+        style={{
+          opacity: isHovered ? 1 : 0.75,
+          transition: 'opacity 0.4s ease-out'
+        }}
+      />
+
+      {/* Border Glow */}
+      <div
+        className="absolute inset-0 rounded-2xl pointer-events-none"
+        style={{
+          border: isHovered ? '2px solid rgba(6, 182, 212, 0.8)' : '2px solid rgba(6, 182, 212, 0.25)',
+          boxShadow: isHovered 
+            ? '0 0 50px rgba(6, 182, 212, 0.5), inset 0 0 50px rgba(6, 182, 212, 0.1)' 
+            : '0 0 20px rgba(6, 182, 212, 0.1)',
+          transition: 'all 0.5s ease-out'
+        }}
+      />
+
+      {/* Content Area */}
+      <div
+        className="absolute inset-0 flex flex-col justify-end p-8"
+        style={{
+          transform: isHovered ? 'translateY(0)' : 'translateY(15px)',
+          opacity: isHovered ? 1 : 0.85,
+          transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        }}
+      >
+        {/* Award Badge */}
+        <div
+          style={{
+            transform: isHovered ? 'translateX(0) scale(1)' : 'translateX(-30px) scale(0.85)',
+            opacity: isHovered ? 1 : 0.6,
+            transition: 'all 0.6s ease-out'
+          }}
+          className="mb-6"
+        >
+          <span className="px-5 py-2 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 backdrop-blur-lg rounded-full text-xs font-bold text-white inline-flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow">
+            <Sparkles size={16} />
+            {image.award}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-4xl font-bold text-white mb-3 drop-shadow-lg leading-tight">
+          {image.caption}
+        </h3>
+
+        {/* Description */}
+        <p
+          className="text-gray-100 text-lg mb-5 max-w-lg drop-shadow-md leading-relaxed"
+          style={{
+            transform: isHovered ? 'translateX(0)' : 'translateX(-20px)',
+            opacity: isHovered ? 1 : 0,
+            transition: 'all 0.6s ease-out 0.1s'
+          }}
+        >
+          {image.description}
+        </p>
+
+        {/* Accent Line */}
+        <div
+          className="h-1.5 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 rounded-full shadow-lg"
+          style={{
+            transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
+            transformOrigin: 'left',
+            transition: 'transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s'
+          }}
+        />
+      </div>
+
+      {/* Play Button Indicator */}
+      <div
+        className="absolute top-8 right-8 w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center shadow-xl"
+        style={{
+          transform: isHovered ? 'scale(1.15) rotate(0deg)' : 'scale(0.8) rotate(-90deg)',
+          opacity: isHovered ? 1 : 0.5,
+          transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        }}
+      >
+        <Play size={24} className="text-white fill-white ml-1" />
+      </div>
+    </div>
+  );
+});
+
+SlidingCard.displayName = 'SlidingCard';
+
+// ============================================================================
+// CAROUSEL NAVIGATION COMPONENT
+// ============================================================================
+
+const CarouselNav = ({ galleryImages, activeCard, setActiveCard }) => (
+  <div className="flex justify-center gap-3 mt-12">
+    {galleryImages.map((_, idx) => (
+      <button
+        key={idx}
+        onClick={() => setActiveCard(idx)}
+        className={`transition-all duration-500 rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+          idx === activeCard
+            ? 'w-12 h-3 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 shadow-lg shadow-cyan-500/60'
+            : 'w-3 h-3 bg-gray-600 hover:bg-gray-500 hover:scale-150'
+        }`}
+        aria-label={`Go to slide ${idx + 1}`}
+      />
+    ))}
+  </div>
+);
+
+// ============================================================================
+// MAIN PORTFOLIO COMPONENT
+// ============================================================================
 
 const Portfolio = () => {
   const [darkMode, setDarkMode] = useState(true);
@@ -372,10 +618,10 @@ const Portfolio = () => {
     return window.matchMedia('(max-width: 768px)').matches;
   }, []);
 
-  // Throttled mouse parallax effect
+  // Parallax mouse effect
   const handleMouseMove = useCallback(
     throttle((e) => {
-      if (!isMobile) {
+      if (!isMobile && !prefersReducedMotion()) {
         setMousePosition({
           x: (e.clientX / window.innerWidth - 0.5) * MOUSE_PARALLAX_INTENSITY,
           y: (e.clientY / window.innerHeight - 0.5) * MOUSE_PARALLAX_INTENSITY
@@ -392,7 +638,7 @@ const Portfolio = () => {
     }
   }, [handleMouseMove, isMobile]);
 
-  // Scroll progress and active section detection
+  // Scroll progress tracking
   useEffect(() => {
     const handleScroll = throttle(() => {
       const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
@@ -416,30 +662,32 @@ const Portfolio = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Gallery images
+  // Gallery data
   const galleryImages = useMemo(() => [
     {
       url: "/images/takshak.jpeg",
-      caption: "Web designing at MA College of Engineering, Kothamangalam in Takshak 2025",
+      caption: "Web Design Competition - Takshak 2025",
       award: "1st Place",
       description: "Won first place in regional coding competition with optimal algorithmic solutions and efficient problem-solving approaches"
     },
     {
       url: "/images/kmm1.jpeg",
-      caption: "Coding Competition in KMM College Thrikakara",
+      caption: "Inter-College Coding Challenge",
       award: "First Prize",
-      description: " Recieved first prize in inter-college coding competition  conducted at KMM College of Arts & Science "
+      description: "Received first prize in inter-college coding competition conducted at KMM College of Arts & Science"
     },
     {
       url: "/images/rajagiri.jpeg",
-      caption: "Coding Competition Conducted at Rajagiri College in Inceptra 2024",
+      caption: "Inceptra 2024 Coding Competition",
       award: "First Prize",
-      description: "Recieved first prize in inter-college coding competition  "
+      description: "Achieved first prize in competitive coding at Rajagiri College's annual tech festival"
     }
   ], []);
 
-  // Auto-rotate gallery cards
+  // Auto-rotate gallery
   useEffect(() => {
+    if (prefersReducedMotion()) return;
+    
     const interval = setInterval(() => {
       setActiveCard(prev => (prev + 1) % galleryImages.length);
     }, GALLERY_AUTO_ROTATE_INTERVAL);
@@ -475,6 +723,7 @@ const Portfolio = () => {
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
+  // Projects data
   const projects = useMemo(() => [
     {
       title: "HomeServer Frontend",
@@ -502,6 +751,7 @@ const Portfolio = () => {
     }
   ], []);
 
+  // Achievements data
   const achievements = useMemo(() => [
     {
       year: "2025",
@@ -529,65 +779,67 @@ const Portfolio = () => {
     }
   ], []);
 
+  // Skills data with updated colors
   const skills = useMemo(() => [
     {
       name: "C++",
       level: 95,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/cplusplus/cplusplus-original.svg",
-      color: "from-blue-500 via-purple-500 to-pink-500",
+      color: "from-cyan-500 via-purple-500 to-pink-500",
       fallback: "💻"
     },
     {
       name: "JavaScript",
       level: 95,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg",
-      color: "from-blue-500 via-purple-500 to-pink-500",
+      color: "from-cyan-500 via-purple-500 to-pink-500",
       fallback: "⚡"
     },
     {
       name: "React",
       level: 90,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original-wordmark.svg",
-      color: "from-blue-500 via-purple-500 to-pink-500",
+      color: "from-cyan-500 via-purple-500 to-pink-500",
       fallback: "⚛️"
     },
     {
       name: "Node.js",
       level: 90,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg",
-      color: "from-blue-500 via-purple-500 to-pink-500",
+      color: "from-cyan-500 via-purple-500 to-pink-500",
       fallback: "🟢"
     },
     {
       name: "MongoDB",
       level: 90,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original-wordmark.svg",
-      color: "from-blue-500 via-purple-500 to-pink-500",
+      color: "from-cyan-500 via-purple-500 to-pink-500",
       fallback: "🍃"
     },
     {
       name: "Python",
       level: 85,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg",
-      color: "from-blue-500 via-purple-500 to-pink-500",
+      color: "from-cyan-500 via-purple-500 to-pink-500",
       fallback: "🐍"
     },
     {
       name: "Swift",
       level: 75,
       iconSrc: "https://raw.githubusercontent.com/devicons/devicon/master/icons/swift/swift-original.svg",
-      color: "from-blue-500 via-purple-500 to-pink-500",
+      color: "from-cyan-500 via-purple-500 to-pink-500",
       fallback: "🍎"
     },
     {
       name: "Kotlin",
       level: 75,
       iconSrc: "https://www.vectorlogo.zone/logos/kotlinlang/kotlinlang-icon.svg",
-      color: "from-blue-500 via-purple-500 to-pink-500",
+      color: "from-cyan-500 via-purple-500 to-pink-500",
       fallback: "🤖"
     }
   ], []);
 
+  // Tools and technologies
   const toolIcons = useMemo(() => [
     { href: "https://flutter.dev", src: "https://www.vectorlogo.zone/logos/flutterio/flutterio-icon.svg", alt: "Flutter" },
     { href: "https://developer.apple.com/swift/", src: "https://raw.githubusercontent.com/devicons/devicon/master/icons/swift/swift-original.svg", alt: "Swift" },
@@ -604,193 +856,162 @@ const Portfolio = () => {
     { href: "https://www.linux.org/", src: "https://raw.githubusercontent.com/devicons/devicon/master/icons/linux/linux-original.svg", alt: "Linux" }
   ], []);
 
-  const SlidingCard = React.memo(({ image, isActive }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const [imgError, setImgError] = useState(false);
-
-    return (
-      <div
-        className={`absolute inset-0 h-96 w-full max-w-2xl mx-auto overflow-hidden rounded-2xl cursor-pointer transition-all duration-700 ${
-          isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
-        }`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-          transition: 'opacity 700ms ease-in-out, z-index 0ms linear'
-        }}
-      >
-        <div
-          className="absolute inset-0 overflow-hidden bg-gray-800"
-          style={{
-            transform: isHovered ? 'scale(1.1)' : 'scale(1)',
-            transition: 'transform 0.6s ease-out'
-          }}
-        >
-          {!imgError ? (
-            <img
-              src={image.url}
-              alt={image.caption}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
-              <Award size={64} className="text-blue-400 opacity-50" />
-            </div>
-          )}
-        </div>
-
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"
-          style={{
-            opacity: isHovered ? 1 : 0.8,
-            transition: 'opacity 0.4s ease-out'
-          }}
-        />
-
-        <div
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          style={{
-            border: isHovered ? '2px solid rgba(59, 130, 246, 0.6)' : '2px solid rgba(59, 130, 246, 0.2)',
-            boxShadow: isHovered ? '0 0 40px rgba(59, 130, 246, 0.4), inset 0 0 40px rgba(59, 130, 246, 0.1)' : 'none',
-            transition: 'all 0.4s ease-out'
-          }}
-        />
-
-        <div
-          className="absolute inset-0 flex flex-col justify-end p-8"
-          style={{
-            transform: isHovered ? 'translateY(0)' : 'translateY(10px)',
-            opacity: isHovered ? 1 : 0.9,
-            transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
-          }}
-        >
-          <div
-            className="mb-4"
-            style={{
-              transform: isHovered ? 'translateX(0) scale(1)' : 'translateX(-20px) scale(0.9)',
-              opacity: isHovered ? 1 : 0.7,
-              transition: 'all 0.5s ease-out'
-            }}
-          >
-            <span className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 backdrop-blur-sm rounded-full text-xs font-bold text-white inline-flex items-center gap-2 shadow-lg">
-              <Sparkles size={14} />
-              {image.award}
-            </span>
-          </div>
-
-          <h3 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">{image.caption}</h3>
-
-          <p
-            className="text-gray-100 text-base mb-4 max-w-lg drop-shadow-md"
-            style={{
-              transform: isHovered ? 'translateX(0)' : 'translateX(-15px)',
-              opacity: isHovered ? 1 : 0,
-              transition: 'all 0.5s ease-out 0.1s'
-            }}
-          >
-            {image.description}
-          </p>
-
-          <div
-            className="h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full shadow-lg"
-            style={{
-              transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
-              transformOrigin: 'left',
-              transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s'
-            }}
-          />
-        </div>
-
-        <div
-          className="absolute top-6 right-6 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center shadow-xl"
-          style={{
-            transform: isHovered ? 'scale(1.1) rotate(0deg)' : 'scale(0.9) rotate(-90deg)',
-            opacity: isHovered ? 1 : 0.6,
-            transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
-          }}
-        >
-          <Play size={20} className="text-white fill-white ml-1" />
-        </div>
-      </div>
-    );
-  });
-
-  SlidingCard.displayName = 'SlidingCard';
-
-  const CarouselNav = () => (
-    <div className="flex justify-center gap-3 mt-10">
-      {galleryImages.map((_, idx) => (
-        <button
-          key={idx}
-          onClick={() => setActiveCard(idx)}
-          className={`transition-all duration-500 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-            idx === activeCard
-              ? 'w-12 h-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 shadow-lg shadow-blue-500/50'
-              : 'w-3 h-3 bg-gray-600 hover:bg-gray-500 hover:scale-125'
-          }`}
-          aria-label={`Go to slide ${idx + 1}`}
-        />
-      ))}
-    </div>
-  );
+  // ========================================================================
+  // RENDER
+  // ========================================================================
 
   return (
     <div className={`min-h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       <style>{`
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes float { 0%,100% { transform: translateY(0px) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } }
-        @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(59,130,246,0.5); } 50% { box-shadow: 0 0 40px rgba(59,130,246,0.8), 0 0 60px rgba(59,130,246,0.4); } }
-        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.05);opacity:0.8;} }
-        @keyframes shimmer { 0%{background-position:-1000px 0;}100%{background-position:1000px 0;} }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* ============== KEYFRAME ANIMATIONS ============== */
         
-        * { scroll-behavior: smooth; }
-        
-        .hover-lift{ 
-          transition: transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow .4s, border-color .4s; 
+        @keyframes slideUp { 
+          from { 
+            opacity: 0; 
+            transform: translateY(40px); 
+            filter: blur(8px);
+          } 
+          to { 
+            opacity: 1; 
+            transform: translateY(0); 
+            filter: blur(0);
+          } 
         }
-        .hover-lift:hover{ 
+        
+        @keyframes textReveal {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+            filter: blur(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+          }
+        }
+        
+        @keyframes float { 
+          0%, 100% { 
+            transform: translateY(0px) scale(1); 
+            opacity: 0.5;
+          } 
+          50% { 
+            transform: translateY(-25px) scale(1.05); 
+            opacity: 0.8;
+          } 
+        }
+        
+        @keyframes glow { 
+          0%, 100% { 
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+          } 
+          50% { 
+            box-shadow: 0 0 40px rgba(6, 182, 212, 0.8), 0 0 60px rgba(139, 92, 246, 0.4);
+          } 
+        }
+        
+        @keyframes pulse { 
+          0%, 100% { 
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% { 
+            transform: scale(1.05);
+            opacity: 0.7;
+          } 
+        }
+        
+        @keyframes shimmer { 
+          0% { 
+            background-position: -1000px 0;
+          }
+          100% { 
+            background-position: 1000px 0;
+          } 
+        }
+        
+        @keyframes fadeIn { 
+          from { opacity: 0; } 
+          to { opacity: 1; } 
+        }
+        
+        @keyframes meshMove {
+          0%, 100% { 
+            opacity: 0.5; 
+            transform: scale(1) translateY(0); 
+          }
+          50% { 
+            opacity: 0.8; 
+            transform: scale(1.1) translateY(-10px);
+          }
+        }
+        
+        @keyframes shimmerEffect {
+          0% {
+            background-position: -1000px 0;
+          }
+          100% {
+            background-position: 1000px 0;
+          }
+        }
+        
+        /* ============== UTILITY CLASSES ============== */
+        
+        * { 
+          scroll-behavior: smooth; 
+        }
+        
+        .hover-lift { 
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                      box-shadow 0.4s, 
+                      border-color 0.4s; 
+        }
+        
+        .hover-lift:hover { 
           transform: translateY(-12px) scale(1.02); 
-          box-shadow: 0 25px 50px rgba(59, 130, 246, 0.3); 
+          box-shadow: 0 25px 50px rgba(6, 182, 212, 0.3); 
         }
+        
         .hover-lift:focus-within {
-          outline: 2px solid rgba(59, 130, 246, 0.5);
+          outline: 2px solid rgba(6, 182, 212, 0.5);
           outline-offset: 4px;
         }
         
-        .nav-link{ 
+        .nav-link { 
           position: relative; 
-          transition: color 0.3s;
+          transition: color 0.3s ease;
         }
-        .nav-link::after{ 
-          content:''; 
-          position:absolute; 
-          bottom:-2px; 
-          left:0; 
-          width:0; 
-          height:2px; 
-          background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); 
-          transition: width .3s; 
+        
+        .nav-link::after { 
+          content: ''; 
+          position: absolute; 
+          bottom: -2px; 
+          left: 0; 
+          width: 0; 
+          height: 2px; 
+          background: linear-gradient(90deg, #06B6D4, #8B5CF6, #EC4899); 
+          transition: width 0.3s ease;
         }
+        
         .nav-link:hover::after, 
         .nav-link.active::after { 
-          width:100%; 
+          width: 100%; 
         }
+        
         .nav-link:focus {
-          outline: 2px solid rgba(59, 130, 246, 0.5);
+          outline: 2px solid rgba(6, 182, 212, 0.5);
           outline-offset: 4px;
           border-radius: 4px;
         }
         
         .gradient-text { 
-          background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); 
-          background-size:200% 200%; 
+          background: linear-gradient(90deg, #06B6D4, #8B5CF6, #EC4899); 
+          background-size: 200% 200%; 
           animation: shimmer 3s linear infinite; 
-          -webkit-background-clip:text; 
-          -webkit-text-fill-color:transparent; 
-          background-clip:text; 
+          -webkit-background-clip: text; 
+          -webkit-text-fill-color: transparent; 
+          background-clip: text; 
         }
         
         .floating { 
@@ -805,58 +1026,58 @@ const Portfolio = () => {
           animation: fadeIn 0.6s ease-out forwards;
         }
         
+        .text-reveal {
+          animation: textReveal 0.8s ease-out forwards;
+        }
+        
         .scrollbar-hide::-webkit-scrollbar { 
           display: none; 
         }
+        
         .scrollbar-hide { 
-          -ms-overflow-style:none; 
-          scrollbar-width:none; 
+          -ms-overflow-style: none; 
+          scrollbar-width: none; 
         }
         
         .tools-row img { 
-          width: 44px; 
-          height: 44px; 
+          width: 48px; 
+          height: 48px; 
           object-fit: contain; 
-          transition: transform .3s ease, filter .3s ease; 
+          transition: transform 0.3s ease, filter 0.3s ease; 
         }
+        
         .tools-row a { 
-          display:inline-flex; 
-          align-items:center; 
-          justify-content:center; 
-          width:56px; 
-          height:56px; 
-          border-radius:12px; 
-          transition: all .3s ease;
+          display: inline-flex; 
+          align-items: center; 
+          justify-content: center; 
+          width: 60px; 
+          height: 60px; 
+          border-radius: 14px; 
+          transition: all 0.3s ease;
         }
+        
         .tools-row a:hover { 
-          background: rgba(59, 130, 246, 0.1);
+          background: rgba(6, 182, 212, 0.15);
+          transform: translateY(-4px);
         }
+        
         .tools-row a:hover img { 
-          transform: translateY(-4px) scale(1.1); 
+          transform: translateY(-6px) scale(1.15); 
+          filter: brightness(1.2);
         }
+        
         .tools-row a:focus {
-          outline: 2px solid rgba(59, 130, 246, 0.5);
+          outline: 2px solid rgba(6, 182, 212, 0.5);
           outline-offset: 2px;
-        }
-        
-        .skill-icon { 
-          width: 32px; 
-          height: 32px; 
-          object-fit: contain; 
-          margin-right: 12px;
-          transition: transform 0.3s ease;
-        }
-        
-        .skill-bar {
-          transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-          will-change: width;
         }
         
         button:focus,
         a:focus {
-          outline: 2px solid rgba(59, 130, 246, 0.5);
+          outline: 2px solid rgba(6, 182, 212, 0.5);
           outline-offset: 2px;
         }
+        
+        /* ============== REDUCED MOTION ============== */
         
         @media (prefers-reduced-motion: reduce) {
           *,
@@ -867,65 +1088,130 @@ const Portfolio = () => {
             transition-duration: 0.01ms !important;
           }
         }
+
+        /* ============== MOBILE RESPONSIVE ============== */
+        
+        @media (max-width: 768px) {
+          .skill-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          
+          .hero-title {
+            font-size: 2rem;
+          }
+          
+          .terminal-section {
+            display: none;
+          }
+          
+          .floating {
+            animation: none;
+          }
+        }
+
+        /* ============== ACCESSIBILITY ============== */
+        
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border-width: 0;
+        }
+
+        .focus:not-sr-only {
+          position: static;
+          width: auto;
+          height: auto;
+          padding: inherit;
+          margin: inherit;
+          overflow: visible;
+          clip: auto;
+          white-space: normal;
+        }
       `}</style>
 
-      {/* Skip to content link for accessibility */}
+      {/* Skip to main content link */}
       <a 
         href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-lg"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-cyan-500 focus:text-white focus:rounded-lg focus:font-semibold"
       >
         Skip to main content
       </a>
 
-      {/* Top progress bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-gray-800 z-50" role="progressbar" aria-valuenow={scrollProgress} aria-valuemin="0" aria-valuemax="100">
+      {/* Top Progress Bar */}
+      <div 
+        className="fixed top-0 left-0 right-0 h-1 bg-gray-800/50 z-50" 
+        role="progressbar" 
+        aria-valuenow={Math.round(scrollProgress)} 
+        aria-valuemin="0" 
+        aria-valuemax="100"
+      >
         <div 
-          className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-300" 
-          style={{ width: `${scrollProgress}%` }} 
+          className="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 transition-all duration-300 shadow-lg shadow-cyan-500/50" 
+          style={{ width: `${scrollProgress}%`, willChange: 'width' }} 
         />
       </div>
 
-      {/* Navigation */}
+      {/* Navigation Bar */}
       <nav 
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          scrollProgress > 5 ? (darkMode ? 'bg-gray-900/95 backdrop-blur-lg shadow-lg' : 'bg-gray-50/95 backdrop-blur-lg shadow-lg') : ''
+          scrollProgress > 5 
+            ? (darkMode ? 'bg-gray-900/95 backdrop-blur-xl shadow-lg' : 'bg-gray-50/95 backdrop-blur-xl shadow-lg') 
+            : ''
         }`}
         role="navigation"
         aria-label="Main navigation"
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold gradient-text">Shanavas</div>
-          <div className="flex gap-6 items-center">
-            {['projects','achievements','gallery','skills','contact'].map(item => (
+          <div className="text-2xl font-bold gradient-text">
+            Shanavas
+          </div>
+          
+          <div className="flex gap-8 items-center">
+            {['projects', 'achievements', 'gallery', 'skills', 'contact'].map(item => (
               <a 
                 key={item} 
                 href={`#${item}`} 
                 className={`nav-link text-sm font-medium transition-colors ${
-                  activeSection === item ? 'active text-blue-400' : darkMode ? 'text-gray-300' : 'text-gray-600'
+                  activeSection === item 
+                    ? 'active text-cyan-400' 
+                    : darkMode ? 'text-gray-300 hover:text-cyan-300' : 'text-gray-600 hover:text-cyan-600'
                 }`}
                 aria-current={activeSection === item ? 'page' : undefined}
               >
                 {item.charAt(0).toUpperCase() + item.slice(1)}
               </a>
             ))}
+            
             <button 
               onClick={() => setDarkMode(!darkMode)} 
-              className="p-2 rounded-full hover:bg-blue-500/20 transition-all hover:scale-110"
+              className="p-2 rounded-full hover:bg-cyan-500/20 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
             >
-              {darkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-indigo-400" />}
+              {darkMode ? (
+                <Sun size={20} className="text-yellow-400" />
+              ) : (
+                <Moon size={20} className="text-indigo-400" />
+              )}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Back to top button */}
+      {/* Back to Top Button */}
       {showBackToTop && (
         <button
           onClick={scrollToTop}
           className={`fixed bottom-8 right-8 z-40 p-4 rounded-full ${
-            darkMode ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
-          } text-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2`}
+            darkMode 
+              ? 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600' 
+              : 'bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700'
+          } text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2`}
           aria-label="Back to top"
           style={{ animation: 'fadeIn 0.3s ease-out' }}
         >
@@ -933,35 +1219,41 @@ const Portfolio = () => {
         </button>
       )}
 
-      {/* Hero Section */}
+      {/* ========================================================================
+          HERO SECTION
+          ======================================================================== */}
       <section id="hero" className="min-h-screen flex items-center justify-center relative overflow-hidden px-6 pt-20">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
+        {/* Animated Mesh Gradient Background */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
           <div 
-            className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full filter blur-3xl floating" 
+            className="absolute top-20 left-20 w-72 h-72 bg-cyan-500 rounded-full filter blur-3xl floating" 
             style={{ 
               transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)`,
-              willChange: 'transform'
+              willChange: 'transform',
+              animation: !prefersReducedMotion() ? 'meshMove 20s ease-in-out infinite' : 'none'
             }} 
           />
           <div 
             className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl floating" 
             style={{ 
               transform: `translate(${-mousePosition.x}px, ${-mousePosition.y}px)`,
-              willChange: 'transform'
+              willChange: 'transform',
+              animationDelay: '2s'
             }} 
           />
           <div 
             className="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-500 rounded-full filter blur-3xl floating" 
             style={{ 
               transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
-              willChange: 'transform'
+              willChange: 'transform',
+              animationDelay: '4s'
             }} 
           />
         </div>
 
         <div className="max-w-5xl mx-auto relative z-10" id="main-content">
           {/* Interactive Terminal */}
-          <div className="mb-12">
+          <div className="mb-16 terminal-section">
             <InteractiveTerminal 
               onNavigate={scrollToSection}
               handleResumeView={handleResumeView}
@@ -969,35 +1261,45 @@ const Portfolio = () => {
             />
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-center">
+          {/* Hero Title with Text Reveal Animation */}
+          <h1 className="text-6xl md:text-8xl font-bold mb-6 leading-tight text-center hero-title text-reveal" style={{ animationDelay: '0.2s' }}>
             <span className="gradient-text">Shanavas V Basheer</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-400 mb-4 max-w-3xl mx-auto leading-relaxed text-center">
+          {/* Tagline / Subtitle */}
+          <p className="text-cyan-400 text-lg md:text-xl mb-8 font-semibold text-center text-reveal" style={{ animationDelay: '0.4s' }}>
+            Full-Stack Developer | Problem Solver | Tech Enthusiast
+          </p>
+
+          {/* Main Description */}
+          <p className="text-lg md:text-xl text-gray-400 mb-6 max-w-3xl mx-auto leading-relaxed text-center text-reveal" style={{ animationDelay: '0.6s' }}>
             Experienced Full-Stack Developer specializing in backend architecture, cloud solutions, and enterprise-grade applications.
             Passionate about building scalable systems, automating workflows, and solving complex technical challenges.
           </p>
 
-          <p className="text-blue-400 text-lg md:text-xl mb-12 font-semibold flex items-center justify-center gap-2">
+          {/* CTA Tagline */}
+          <p className="text-cyan-400 text-lg md:text-xl mb-12 font-semibold flex items-center justify-center gap-2 text-reveal" style={{ animationDelay: '0.8s' }}>
             <Zap size={24} className="pulsing" /> Build. Break. Better. <Rocket size={24} className="pulsing" style={{ animationDelay: '0.5s' }} />
           </p>
 
-          <div className="flex gap-4 justify-center flex-wrap mb-8">
+          {/* CTA Buttons */}
+          <div className="flex gap-4 justify-center flex-wrap mb-12 text-reveal" style={{ animationDelay: '1s' }}>
             <a 
               href="mailto:shanavasvbasheer@gmail.com" 
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer"
+              className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-cyan-500/60 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
             >
               <Mail size={20} /> Get In Touch
             </a>
             <button 
               onClick={handleResumeView}
-              className="px-8 py-4 border-2 border-blue-500 rounded-lg font-semibold hover:bg-blue-500/10 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
+              className="px-8 py-4 border-2 border-cyan-500 rounded-lg font-semibold hover:bg-cyan-500/10 hover:shadow-lg hover:shadow-cyan-500/40 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
             >
               <Download size={20} className="group-hover:animate-bounce" /> View Resume
             </button>
           </div>
 
-          <div className="flex gap-6 justify-center mt-12">
+          {/* Social Links */}
+          <div className="flex gap-6 justify-center mt-12 text-reveal" style={{ animationDelay: '1.2s' }}>
             {[
               { icon: Github, href: "https://github.com/shanavasvbasheer", label: "GitHub" },
               { icon: Linkedin, href: "https://linkedin.com/in/shanavasvbasheer", label: "LinkedIn" },
@@ -1008,21 +1310,23 @@ const Portfolio = () => {
                 href={href} 
                 target={href.includes('http') ? "_blank" : undefined} 
                 rel={href.includes('http') ? "noopener noreferrer" : undefined}
-                className="p-3 rounded-full hover:bg-blue-500/20 transition-all hover:scale-125 hover:rotate-12"
+                className="p-3 rounded-full hover:bg-cyan-500/20 transition-all hover:scale-125 hover:rotate-12 group"
                 aria-label={label}
               >
-                <Icon size={24} />
+                <Icon size={24} className="group-hover:text-cyan-400 transition-colors" />
               </a>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Projects Section */}
+      {/* ========================================================================
+          PROJECTS SECTION
+          ======================================================================== */}
       <section id="projects" className="py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-16">
-            <Code className="text-blue-400" size={32} />
+            <Code className="text-cyan-400" size={32} />
             <h2 className="text-5xl font-bold gradient-text">Featured Projects</h2>
           </div>
 
@@ -1030,14 +1334,17 @@ const Portfolio = () => {
             {projects.map((project, i) => (
               <div
                 key={i}
-                className={`bg-gray-800 border-2 border-blue-500/20 rounded-xl p-8 hover-lift group hover:border-blue-500/60`}
+                className={`bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-2 border-cyan-500/20 rounded-2xl p-8 hover-lift group hover:border-cyan-500/70 transition-all ${
+                  i % 2 === 0 ? 'md:mt-8' : ''
+                }`}
                 style={{
                   animation: `slideUp 0.6s ease-out forwards`,
                   animationDelay: `${i * ANIMATION_DELAY_INCREMENT}s`,
-                  opacity: 0
+                  opacity: 0,
+                  contain: 'layout style paint'
                 }}
               >
-                <h3 className="text-2xl font-bold mb-4 text-blue-400 group-hover:text-purple-400 transition-colors">
+                <h3 className="text-2xl font-bold mb-4 text-cyan-400 group-hover:text-purple-400 transition-colors">
                   {project.title}
                 </h3>
                 <p className="text-gray-400 mb-6 leading-relaxed">{project.description}</p>
@@ -1046,7 +1353,7 @@ const Portfolio = () => {
                   {project.tech.map((tech, j) => (
                     <span 
                       key={j} 
-                      className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm hover:bg-blue-500/30 transition-colors"
+                      className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm hover:bg-cyan-500/30 transition-colors font-medium"
                     >
                       {tech}
                     </span>
@@ -1060,7 +1367,7 @@ const Portfolio = () => {
                     href={project.repo} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="inline-flex items-center gap-2 text-blue-500 hover:text-purple-500 font-medium transition-colors"
+                    className="inline-flex items-center gap-2 text-cyan-500 hover:text-purple-500 font-medium transition-colors group"
                   >
                     <Github size={18} /> View Code
                   </a>
@@ -1081,16 +1388,18 @@ const Portfolio = () => {
         </div>
       </section>
 
-      {/* Achievements Section */}
+           {/* ========================================================================
+          ACHIEVEMENTS SECTION
+          ======================================================================== */}
       <section id="achievements" className="py-32 px-6 bg-gray-800/50">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-16">
-            <Award className="text-blue-400" size={32} />
+            <Award className="text-cyan-400" size={32} />
             <h2 className="text-5xl font-bold gradient-text">Achievements & Experience</h2>
           </div>
 
           <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500" />
+            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cyan-500 via-purple-500 to-pink-500" />
             
             {achievements.map((achievement, i) => (
               <div 
@@ -1103,27 +1412,30 @@ const Portfolio = () => {
                 }}
               >
                 <div 
-                  className="absolute left-4 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg" 
-                  style={{ animation: 'glow 2s ease-in-out infinite', animationDelay: `${i * 0.3}s` }}
+                  className="absolute left-4 w-8 h-8 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg" 
+                  style={{ 
+                    animation: !prefersReducedMotion() ? 'glow 2s ease-in-out infinite' : 'none', 
+                    animationDelay: `${i * 0.3}s` 
+                  }}
                 >
                   <div className="w-3 h-3 bg-white rounded-full pulsing" />
                 </div>
 
-                <div className="bg-gray-800 border-2 border-blue-500/20 rounded-lg p-6 hover-lift group hover:border-blue-500/60">
+                <div className="bg-gray-800/80 border-2 border-cyan-500/20 rounded-2xl p-6 hover-lift group hover:border-cyan-500/70 transition-all">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <div className="text-blue-400 font-semibold text-sm mb-1 flex items-center gap-2">
+                      <div className="text-cyan-400 font-semibold text-sm mb-1 flex items-center gap-2">
                         <Calendar size={14} />
                         {achievement.year}
                       </div>
-                      <h3 className="text-xl font-bold group-hover:text-blue-400 transition-colors">
+                      <h3 className="text-2xl font-bold group-hover:text-cyan-400 transition-colors">
                         {achievement.title}
                       </h3>
                     </div>
-                    <ChevronRight className="text-gray-500 group-hover:text-blue-400 group-hover:translate-x-2 transition-all" />
+                    <ChevronRight className="text-gray-500 group-hover:text-cyan-400 group-hover:translate-x-2 transition-all" />
                   </div>
-                  <div className="text-purple-400 mb-2 font-medium">{achievement.org}</div>
-                  <p className="text-gray-500 text-sm leading-relaxed">{achievement.description}</p>
+                  <div className="text-purple-400 mb-3 font-medium text-lg">{achievement.org}</div>
+                  <p className="text-gray-400 text-sm leading-relaxed">{achievement.description}</p>
                 </div>
               </div>
             ))}
@@ -1131,13 +1443,15 @@ const Portfolio = () => {
         </div>
       </section>
 
-      {/* Gallery Section */}
+      {/* ========================================================================
+          GALLERY SECTION
+          ======================================================================== */}
       <section id="gallery" className="py-32 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold gradient-text mb-4">Moments in Action</h2>
             <p className="text-gray-400 text-lg flex items-center justify-center gap-2">
-              <Sparkles size={20} className="text-blue-400" /> 
+              <Sparkles size={20} className="text-cyan-400" /> 
               Hover to explore • Navigate with arrows or dots
               <Sparkles size={20} className="text-purple-400" />
             </p>
@@ -1150,7 +1464,7 @@ const Portfolio = () => {
             
             <button 
               onClick={() => setActiveCard(prev => (prev - 1 + galleryImages.length) % galleryImages.length)} 
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-800/80 hover:bg-blue-500/80 transition-all z-20 hover:scale-110 backdrop-blur-sm"
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-800/80 hover:bg-cyan-500/80 transition-all z-20 hover:scale-110 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-cyan-400"
               aria-label="Previous image"
             >
               <ChevronLeft size={24} className="text-white" />
@@ -1158,33 +1472,33 @@ const Portfolio = () => {
             
             <button 
               onClick={() => setActiveCard(prev => (prev + 1) % galleryImages.length)} 
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-800/80 hover:bg-blue-500/80 transition-all z-20 hover:scale-110 backdrop-blur-sm"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-800/80 hover:bg-cyan-500/80 transition-all z-20 hover:scale-110 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-cyan-400"
               aria-label="Next image"
             >
               <ChevronRight size={24} className="text-white" />
             </button>
           </div>
 
-          <CarouselNav />
-
-         
+          <CarouselNav galleryImages={galleryImages} activeCard={activeCard} setActiveCard={setActiveCard} />
         </div>
       </section>
 
-      {/* Skills Section */}
+      {/* ========================================================================
+          SKILLS SECTION
+          ======================================================================== */}
       <section id="skills" className="py-32 px-6 bg-gray-800/50">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
-            <Terminal className="text-blue-400" size={32} />
+            <Terminal className="text-cyan-400" size={32} />
             <h2 className="text-5xl font-bold gradient-text">Technical Arsenal</h2>
           </div>
 
-          <p className="text-gray-400 text-lg mb-12 text-center">
-            Technologies and tools I work with to build exceptional software
+          <p className="text-gray-400 text-lg mb-16 text-center max-w-3xl mx-auto">
+            Technologies and tools I work with to build exceptional software solutions
           </p>
 
-          {/* Tools/Technologies Icons */}
-          <div className="tools-row flex flex-wrap gap-4 items-center justify-center mb-16">
+          {/* Tools/Technologies Icons Grid */}
+          <div className="tools-row flex flex-wrap gap-4 items-center justify-center mb-20 px-4">
             {toolIcons.map((t, i) => (
               <a 
                 key={i} 
@@ -1192,7 +1506,8 @@ const Portfolio = () => {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 title={t.alt} 
-                className="p-1"
+                className="p-1 group"
+                aria-label={`Visit ${t.alt} website`}
               >
                 <img 
                   src={t.src} 
@@ -1203,13 +1518,14 @@ const Portfolio = () => {
                       e.target.style.display = 'none';
                     }
                   }}
+                  className="transition-transform duration-300"
                 />
               </a>
             ))}
           </div>
 
-          {/* Skill Cards Grid - 4 columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Skill Cards Grid - 3 Columns Optimized Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 skill-grid max-w-6xl mx-auto">
             {skills.map((skill, i) => (
               <SkillCard 
                 key={i}
@@ -1220,85 +1536,105 @@ const Portfolio = () => {
               />
             ))}
           </div>
+
+          {/* Additional Note */}
+          <div className="mt-16 text-center">
+            <p className="text-gray-500 text-sm">
+              Always learning and exploring new technologies • Proficiency levels based on professional experience
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Contact Section */}
+      {/* ========================================================================
+          CONTACT SECTION
+          ======================================================================== */}
       <section id="contact" className="py-32 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-5xl font-bold mb-6 gradient-text">Let's Build Something Amazing</h2>
-          <p className="text-xl text-gray-400 mb-12 leading-relaxed">
+          <p className="text-xl text-gray-400 mb-16 leading-relaxed">
             Open to new opportunities, collaborations, and interesting conversations about technology.
             Let's connect and create something exceptional together.
           </p>
 
+          {/* Contact Cards Grid */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
+            {/* Email Card with Copy Functionality */}
             <button 
               onClick={() => copyToClipboard('shanavasvbasheer@gmail.com')}
-              className="bg-gray-800 border-2 border-blue-500/20 px-8 py-6 rounded-lg hover-lift flex items-center gap-4 group hover:border-blue-500/60 text-left relative overflow-hidden"
+              className="bg-gray-800/80 border-2 border-cyan-500/20 px-8 py-8 rounded-2xl hover-lift flex items-center gap-4 group hover:border-cyan-500/70 text-left relative overflow-hidden transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400"
             >
-              <div className="p-3 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
-                <Mail className="text-blue-400 group-hover:scale-125 transition-transform" size={24} />
+              <div className="p-4 bg-cyan-500/20 rounded-lg group-hover:bg-cyan-500/30 transition-colors">
+                <Mail className="text-cyan-400 group-hover:scale-125 transition-transform" size={28} />
               </div>
               <div className="flex-1">
-                <div className="text-xs text-gray-500 mb-1">Email</div>
-                <div className="font-semibold group-hover:text-blue-400 transition-colors">
+                <div className="text-xs text-gray-500 mb-1 font-semibold">Email</div>
+                <div className="font-semibold text-lg group-hover:text-cyan-400 transition-colors">
                   shanavasvbasheer@gmail.com
                 </div>
               </div>
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                {copiedEmail ? <Check size={20} className="text-green-400" /> : <Copy size={20} className="text-gray-400" />}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {copiedEmail ? (
+                  <Check size={20} className="text-emerald-400 animate-pulse" />
+                ) : (
+                  <Copy size={20} className="text-gray-400" />
+                )}
               </div>
             </button>
 
+            {/* Phone Card */}
             <a 
               href="tel:+918547363158" 
-              className="bg-gray-800 border-2 border-blue-500/20 px-8 py-6 rounded-lg hover-lift flex items-center gap-4 border group hover:border-blue-500/60 text-left"
+              className="bg-gray-800/80 border-2 border-cyan-500/20 px-8 py-8 rounded-2xl hover-lift flex items-center gap-4 group hover:border-cyan-500/70 text-left transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400"
             >
-              <div className="p-3 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
-                <Phone className="text-purple-400 group-hover:scale-125 transition-transform" size={24} />
+              <div className="p-4 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
+                <Phone className="text-purple-400 group-hover:scale-125 transition-transform" size={28} />
               </div>
               <div>
-                <div className="text-xs text-gray-500 mb-1">Phone</div>
-                <div className="font-semibold group-hover:text-purple-400 transition-colors">
+                <div className="text-xs text-gray-500 mb-1 font-semibold">Phone</div>
+                <div className="font-semibold text-lg group-hover:text-purple-400 transition-colors">
                   +91 85473 63158
                 </div>
               </div>
             </a>
           </div>
 
-          <div className="bg-gray-800/50 rounded-lg p-8 border-2 border-blue-500/20">
+          {/* Location & Availability Card */}
+          <div className="bg-gray-800/50 rounded-2xl p-8 border-2 border-cyan-500/20 mb-12">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <MapPin size={20} className="text-blue-400" />
-              <p className="text-gray-400">Based in Kochi, Kerala, India</p>
+              <MapPin size={20} className="text-cyan-400" />
+              <p className="text-gray-300 text-lg font-semibold">Based in Kochi, Kerala, India</p>
             </div>
-            <p className="text-gray-500 text-sm mb-2">
+            <p className="text-gray-400 text-sm mb-4">
               Currently pursuing M.Voc in Software Application Development at CUSAT
             </p>
             <div className="flex items-center justify-center gap-2 mt-4">
-              <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-              <span className="text-blue-400 text-sm font-medium">Available for opportunities</span>
+              <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-emerald-400 text-sm font-semibold">Available for opportunities</span>
             </div>
           </div>
 
-          <div className="mt-12">
+          {/* Resume Download Button */}
+          <div className="mt-16">
             <button 
               onClick={handleResumeDownload}
-              className="px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer mx-auto group"
+              className="px-12 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-cyan-500/60 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer mx-auto group focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
-              <Download size={20} className="group-hover:animate-bounce" /> Download Resume
+              <Download size={20} className="group-hover:animate-bounce" /> Download Full Resume
             </button>
           </div>
         </div>
       </section>
 
-   {/* Footer */}
-      <footer className="bg-gray-800 border-t-2 border-blue-500/20 py-12 px-6 text-center">
+      {/* ========================================================================
+          FOOTER
+          ======================================================================== */}
+      <footer className="bg-gray-800 border-t-2 border-cyan-500/20 py-16 px-6 text-center">
         <div className="max-w-7xl mx-auto">
           {/* Social Links */}
-          <div className="flex justify-center gap-8 mb-8">
+          <div className="flex justify-center gap-8 mb-12">
             {[
-              { icon: Github, href: "https://github.com/shanavasvbasheer", label: "GitHub" },
+              { icon: Github, href: "https://github.com/shanavasvb", label: "GitHub" },
               { icon: Linkedin, href: "https://linkedin.com/in/shanavasvbasheer", label: "LinkedIn" },
               { icon: Mail, href: "mailto:shanavasvbasheer@gmail.com", label: "Email" }
             ].map(({ icon: Icon, href, label }, i) => (
@@ -1307,41 +1643,44 @@ const Portfolio = () => {
                 href={href} 
                 target={href.includes('http') ? "_blank" : undefined} 
                 rel={href.includes('http') ? "noopener noreferrer" : undefined}
-                className="p-3 rounded-full hover:bg-blue-500/20 transition-all hover:scale-125 hover:rotate-12"
+                className="p-3 rounded-full hover:bg-cyan-500/20 transition-all hover:scale-125 hover:rotate-12 group focus:outline-none focus:ring-2 focus:ring-cyan-400"
                 aria-label={label}
               >
-                <Icon size={24} className="text-gray-400 hover:text-blue-400 transition-colors" />
+                <Icon size={24} className="text-gray-400 group-hover:text-cyan-400 transition-colors" />
               </a>
             ))}
           </div>
           
           {/* Copyright and Credits */}
-          <div className="space-y-3 border-t border-gray-700 pt-8">
-            <p className="text-gray-400 mb-3 font-medium">
+          <div className="space-y-4 border-t border-gray-700 pt-8">
+            <p className="text-gray-400 font-medium">
               © 2025 Shanavas V Basheer. All rights reserved.
             </p>
             
-            <p className="text-sm text-gray-500 flex items-center justify-center gap-2 mb-4">
-              <Zap size={16} className="text-blue-400" /> 
+            <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
+              <Zap size={16} className="text-cyan-400" /> 
               Build. Break. Better. 
               <Rocket size={16} className="text-purple-400" />
             </p>
-            
-            <div className="text-xs text-gray-600 space-y-1">
-            </div>
           </div>
 
           {/* Quick Navigation */}
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <div className="mt-8 flex flex-wrap justify-center gap-6">
             {['projects', 'achievements', 'gallery', 'skills', 'contact'].map((item) => (
               <a
                 key={item}
                 href={`#${item}`}
-                className="text-xs text-gray-500 hover:text-blue-400 transition-colors uppercase font-semibold tracking-wider"
+                className="text-xs text-gray-500 hover:text-cyan-400 transition-colors uppercase font-semibold tracking-wider focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded px-2 py-1"
               >
                 {item}
               </a>
             ))}
+          </div>
+
+          {/* Tech Stack Credit */}
+          <div className="mt-8 text-xs text-gray-600 space-y-1">
+            <p>Built with React • Tailwind CSS • Lucide Icons</p>
+            <p>Optimized for Performance & Accessibility</p>
           </div>
         </div>
       </footer>
