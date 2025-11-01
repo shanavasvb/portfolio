@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Github,
@@ -23,6 +24,7 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { PixelatedCanvas } from "@/components/ui/pixelated-canvas";
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION
@@ -119,6 +121,7 @@ const useMagneticEffect = () => {
  * Check if user prefers reduced motion
  */
 const prefersReducedMotion = () => {
+  if (typeof window === 'undefined') return false;
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 };
 
@@ -301,7 +304,7 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
       {/* Terminal Content Area */}
       <div
         ref={terminalRef}
-        className="bg-gray-900 p-6 font-mono text-sm h-96 overflow-y-auto scrollbar-hide text-gray-100"
+        className="bg-gray-900 p-6 font-mono text-sm h-64 overflow-y-auto scrollbar-hide text-gray-100"
       >
         {history.map((line, i) => (
           <div
@@ -334,6 +337,52 @@ const InteractiveTerminal = ({ onNavigate, handleResumeView, handleResumeDownloa
           autoFocus
         />
       </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// PIXELATED PROFILE IMAGE COMPONENT
+// ============================================================================
+
+const PixelatedProfileImage = ({ src }) => {
+  const [imageError, setImageError] = useState(false);
+  
+  return (
+    <div className="relative w-full max-w-md pixelated-canvas-container">
+      {!imageError ? (
+        <>
+          <PixelatedCanvas
+            src={src}
+            width={400}
+            height={500}
+            cellSize={3}
+            dotScale={0.9}
+            shape="square"
+            backgroundColor="#0A0F1E"
+            dropoutStrength={0.4}
+            interactive
+            distortionStrength={3}
+            distortionRadius={80}
+            distortionMode="swirl"
+            followSpeed={0.2}
+            jitterStrength={4}
+            jitterSpeed={4}
+            sampleAverage
+            tintColor="#06B6D4"
+            tintStrength={0.2}
+            className="rounded-xl border-2 border-cyan-500/40 shadow-2xl shadow-cyan-500/20 hover:border-cyan-500/80 hover:shadow-cyan-500/40 transition-all duration-300"
+            onError={() => setImageError(true)}
+          />
+          
+          {/* Decorative Glow Effect */}
+          <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-2xl -z-10 opacity-50 hover:opacity-100 transition-opacity" />
+        </>
+      ) : (
+        <div className="w-full h-[500px] flex items-center justify-center bg-gradient-to-br from-cyan-900/50 to-purple-900/50 rounded-xl border-2 border-cyan-500/40">
+          <Sparkles size={64} className="text-cyan-400 opacity-50" />
+        </div>
+      )}
     </div>
   );
 };
@@ -615,6 +664,7 @@ const Portfolio = () => {
   const RESUME_DOWNLOAD_URL = `https://drive.google.com/uc?export=download&id=${RESUME_FILE_ID}`;
 
   const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
     return window.matchMedia('(max-width: 768px)').matches;
   }, []);
 
@@ -1106,6 +1156,18 @@ const Portfolio = () => {
           .floating {
             animation: none;
           }
+          
+          .pixelated-canvas-container {
+            max-width: 300px;
+            margin: 0 auto;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .pixelated-canvas-container canvas {
+            max-width: 100%;
+            height: auto;
+          }
         }
 
         /* ============== ACCESSIBILITY ============== */
@@ -1219,7 +1281,7 @@ const Portfolio = () => {
       )}
 
       {/* ========================================================================
-          HERO SECTION
+          HERO SECTION WITH PIXELATED IMAGE
           ======================================================================== */}
       <section id="hero" className="min-h-screen flex items-center justify-center relative overflow-hidden px-6 pt-20">
         {/* Animated Mesh Gradient Background */}
@@ -1250,144 +1312,153 @@ const Portfolio = () => {
           />
         </div>
 
-        <div className="max-w-5xl mx-auto relative z-10" id="main-content">
-          {/* Interactive Terminal */}
-          <div className="mb-16 terminal-section">
-            <InteractiveTerminal 
-              onNavigate={scrollToSection}
-              handleResumeView={handleResumeView}
-              handleResumeDownload={handleResumeDownload}
-            />
-          </div>
-
-          {/* Hero Title with Text Reveal Animation */}
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 leading-tight text-center hero-title text-reveal" style={{ animationDelay: '0.2s' }}>
-            <span className="gradient-text">Shanavas V Basheer</span>
-          </h1>
-
-          {/* Tagline / Subtitle */}
-          <p className="text-cyan-400 text-lg md:text-xl mb-8 font-semibold text-center text-reveal" style={{ animationDelay: '0.4s' }}>
-            Full-Stack Developer | Problem Solver | Tech Enthusiast
-          </p>
-
-          {/* Main Description */}
-          <p className="text-lg md:text-xl text-gray-400 mb-6 max-w-3xl mx-auto leading-relaxed text-center text-reveal" style={{ animationDelay: '0.6s' }}>
-            Experienced Full-Stack Developer specializing in backend architecture, cloud solutions, and enterprise-grade applications.
-            Passionate about building scalable systems, automating workflows, and solving complex technical challenges.
-          </p>
-
-          {/* CTA Tagline */}
-          <p className="text-cyan-400 text-lg md:text-xl mb-12 font-semibold flex items-center justify-center gap-2 text-reveal" style={{ animationDelay: '0.8s' }}>
-            <Zap size={24} className="pulsing" /> Build. Break. Better. <Rocket size={24} className="pulsing" style={{ animationDelay: '0.5s' }} />
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex gap-4 justify-center flex-wrap mb-12 text-reveal" style={{ animationDelay: '1s' }}>
-            <a 
-              href="mailto:shanavasvbasheer@gmail.com" 
-              className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-cyan-500/60 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
-            >
-              <Mail size={20} /> Get In Touch
-            </a>
-            <button 
-              onClick={handleResumeView}
-              className="px-8 py-4 border-2 border-cyan-500 rounded-lg font-semibold hover:bg-cyan-500/10 hover:shadow-lg hover:shadow-cyan-500/40 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
-            >
-              <Download size={20} className="group-hover:animate-bounce" /> View Resume
-            </button>
-          </div>
-
-          {/* Social Links */}
-          <div className="flex gap-6 justify-center mt-12 text-reveal" style={{ animationDelay: '1.2s' }}>
-            {[
-              { icon: Github, href: "https://github.com/shanavasvbasheer", label: "GitHub" },
-              { icon: Linkedin, href: "https://linkedin.com/in/shanavasvbasheer", label: "LinkedIn" },
-              { icon: Mail, href: "mailto:shanavasvbasheer@gmail.com", label: "Email" }
-            ].map(({ icon: Icon, href, label }, i) => (
-              <a 
-                key={i} 
-                href={href} 
-                target={href.includes('http') ? "_blank" : undefined} 
-                rel={href.includes('http') ? "noopener noreferrer" : undefined}
-                className="p-3 rounded-full hover:bg-cyan-500/20 transition-all hover:scale-125 hover:rotate-12 group"
-                aria-label={label}
-              >
-                <Icon size={24} className="group-hover:text-cyan-400 transition-colors" />
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================
-          PROJECTS SECTION
-          ======================================================================== */}
-      <section id="projects" className="py-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-16">
-            <Code className="text-cyan-400" size={32} />
-            <h2 className="text-5xl font-bold gradient-text">Featured Projects</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {projects.map((project, i) => (
-              <div
-                key={i}
-                className={`bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-2 border-cyan-500/20 rounded-2xl p-8 hover-lift group hover:border-cyan-500/70 transition-all ${
-                  i % 2 === 0 ? 'md:mt-8' : ''
-                }`}
-                style={{
-                  animation: `slideUp 0.6s ease-out forwards`,
-                  animationDelay: `${i * ANIMATION_DELAY_INCREMENT}s`,
-                  opacity: 0,
-                  contain: 'layout style paint'
-                }}
-              >
-                <h3 className="text-2xl font-bold mb-4 text-cyan-400 group-hover:text-purple-400 transition-colors">
-                  {project.title}
-                </h3>
-                <p className="text-gray-400 mb-6 leading-relaxed">{project.description}</p>
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.tech.map((tech, j) => (
-                    <span 
-                      key={j} 
-                      className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm hover:bg-cyan-500/30 transition-colors font-medium"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-                
-                <p className="text-sm text-gray-500 italic mb-4">{project.features}</p>
-
-                <div className="flex gap-3 items-center">
-                  <a 
-                    href={project.repo} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="inline-flex items-center gap-2 text-cyan-500 hover:text-purple-500 font-medium transition-colors group"
-                  >
-                    <Github size={18} /> View Code
-                  </a>
-                  {project.live && (
-                    <a 
-                      href={project.live} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="inline-flex items-center gap-2 text-purple-500 hover:text-pink-500 font-medium transition-colors"
-                    >
-                      <ExternalLink size={18} /> Live Demo
-                    </a>
-                  )}
-                </div>
+        <div className="max-w-7xl mx-auto relative z-10 w-full" id="main-content">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Text Content */}
+            <div className="order-2 md:order-1">
+              {/* Interactive Terminal - Hidden on Mobile */}
+              <div className="mb-12 terminal-section hidden lg:block">
+                <InteractiveTerminal 
+                  onNavigate={scrollToSection}
+                  handleResumeView={handleResumeView}
+                  handleResumeDownload={handleResumeDownload}
+                />
               </div>
-            ))}
+
+              {/* Hero Title with Text Reveal Animation */}
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight hero-title text-reveal" style={{ animationDelay: '0.2s' }}>
+                <span className="gradient-text">Shanavas V Basheer</span>
+              </h1>
+
+              {/* Tagline / Subtitle */}
+              <p className="text-cyan-400 text-lg md:text-xl mb-6 font-semibold text-reveal" style={{ animationDelay: '0.4s' }}>
+                Full-Stack Developer | Problem Solver | Tech Enthusiast
+              </p>
+
+              {/* Main Description */}
+              <p className="text-base md:text-lg text-gray-400 mb-6 leading-relaxed text-reveal" style={{ animationDelay: '0.6s' }}>
+                Experienced Full-Stack Developer specializing in backend architecture, cloud solutions, and enterprise-grade applications.
+                Passionate about building scalable systems, automating workflows, and solving complex technical challenges.
+              </p>
+
+              {/* CTA Tagline */}
+              <p className="text-cyan-400 text-lg md:text-xl mb-8 font-semibold flex items-center gap-2 text-reveal" style={{ animationDelay: '0.8s' }}>
+                <Zap size={24} className="pulsing" /> Build. Break. Better. <Rocket size={24} className="pulsing" style={{ animationDelay: '0.5s' }} />
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex gap-4 flex-wrap mb-8 text-reveal" style={{ animationDelay: '1s' }}>
+                <a 
+                  href="mailto:shanavasvbasheer@gmail.com" 
+                  className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg font-semibold hover:shadow-2xl hover:shadow-cyan-500/60 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
+                >
+                  <Mail size={20} /> Get In Touch
+                </a>
+                <button 
+                  onClick={handleResumeView}
+                  className="px-6 py-3 border-2 border-cyan-500 rounded-lg font-semibold hover:bg-cyan-500/10 hover:shadow-lg hover:shadow-cyan-500/40 transition-all duration-300 flex items-center gap-2 cursor-pointer group"
+                >
+                  <Download size={20} className="group-hover:animate-bounce" /> View Resume
+                </button>
+              </div>
+
+              {/* Social Links */}
+              <div className="flex gap-6 mt-8 text-reveal" style={{ animationDelay: '1.2s' }}>
+                {[
+                  { icon: Github, href: "https://github.com/shanavasvbasheer", label: "GitHub" },
+                  { icon: Linkedin, href: "https://linkedin.com/in/shanavasvbasheer", label: "LinkedIn" },
+                  { icon: Mail, href: "mailto:shanavasvbasheer@gmail.com", label: "Email" }
+                ].map(({ icon: Icon, href, label }, i) => (
+                  <a 
+                    key={i} 
+                    href={href} 
+                    target={href.includes('http') ? "_blank" : undefined} 
+                    rel={href.includes('http') ? "noopener noreferrer" : undefined}
+                    className="p-3 rounded-full hover:bg-cyan-500/20 transition-all hover:scale-125 hover:rotate-12 group"
+                    aria-label={label}
+                  >
+                    <Icon size={24} className="group-hover:text-cyan-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column - Pixelated Image */}
+            <div className="order-1 md:order-2 flex justify-center items-center text-reveal" style={{ animationDelay: '0.3s' }}>
+              <PixelatedProfileImage src="/images/myimage.jpg" />
+            </div>
           </div>
         </div>
       </section>
 
-           {/* ========================================================================
+    {/* ========================================================================
+    PROJECTS SECTION
+    ======================================================================== */}
+<section id="projects" className="py-32 px-6">
+  <div className="max-w-7xl mx-auto">
+    <div className="flex items-center gap-3 mb-16">
+      <Code className="text-cyan-400" size={32} />
+      <h2 className="text-5xl font-bold gradient-text">Featured Projects</h2>
+    </div>
+
+    <div className="grid md:grid-cols-3 gap-8">
+      {projects.map((project, i) => (
+        <div
+          key={i}
+          className={`bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-2 border-cyan-500/20 rounded-2xl p-8 hover-lift group hover:border-cyan-500/70 transition-all ${
+            i % 2 === 0 ? 'md:mt-8' : ''
+          }`}
+          style={{
+            animation: `slideUp 0.6s ease-out forwards`,
+            animationDelay: `${i * ANIMATION_DELAY_INCREMENT}s`,
+            opacity: 0,
+            contain: 'layout style paint'
+          }}
+        >
+          <h3 className="text-2xl font-bold mb-4 text-cyan-400 group-hover:text-purple-400 transition-colors">
+            {project.title}
+          </h3>
+          <p className="text-gray-400 mb-6 leading-relaxed">{project.description}</p>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            {project.tech.map((tech, j) => (
+              <span 
+                key={j} 
+                className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm hover:bg-cyan-500/30 transition-colors font-medium"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+          
+          <p className="text-sm text-gray-500 italic mb-4">{project.features}</p>
+
+          <div className="flex gap-3 items-center">
+            <a 
+              href={project.repo} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="inline-flex items-center gap-2 text-cyan-500 hover:text-purple-500 font-medium transition-colors group"
+            >
+              <Github size={18} /> View Code
+            </a>
+            {project.live && (
+              <a 
+                href={project.live} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-2 text-purple-500 hover:text-pink-500 font-medium transition-colors"
+              >
+                <ExternalLink size={18} /> Live Demo
+              </a>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+      {/* ========================================================================
           ACHIEVEMENTS SECTION
           ======================================================================== */}
       <section id="achievements" className="py-32 px-6 bg-gray-800/50">
@@ -1449,7 +1520,7 @@ const Portfolio = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold gradient-text mb-4">Moments in Action</h2>
-        
+            <p className="text-gray-400 text-lg">Celebrating achievements and milestones</p>
           </div>
 
           <div className="relative h-96">
@@ -1520,7 +1591,7 @@ const Portfolio = () => {
           </div>
 
           {/* Skill Cards Grid - 3 Columns Optimized Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 skill-grid max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 skill-grid max-w-6xl mx-auto">
             {skills.map((skill, i) => (
               <SkillCard 
                 key={i}
