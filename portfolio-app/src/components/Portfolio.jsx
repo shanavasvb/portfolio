@@ -435,7 +435,7 @@ const PixelatedProfileImage = ({ src }) => {
           {/* Progress Indicator (Optional - Remove if you don't want it) */}
           {animationProgress < 1 && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-full text-xs text-cyan-400 font-semibold">
-              Revealing... {Math.round(animationProgress * 100)}%
+              Loading ... {Math.round(animationProgress * 100)}%
             </div>
           )}
         </>
