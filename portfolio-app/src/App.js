@@ -11,16 +11,22 @@ import { GallerySection } from './components/sections/GallerySection';
 import { SkillsSection } from './components/sections/SkillsSection';
 import { ContactSection } from './components/sections/ContactSection';
 import { useScrollTracking } from './hooks/useScrollTracking';
+import { LoadingScreen } from './components/ui/LoadingScreen';
 import { throttle, isMobileDevice, prefersReducedMotion, scrollToSection } from './utils/helper';
 import { NAV_ITEMS, THROTTLE_DELAY, MOUSE_PARALLAX_INTENSITY, RESUME_VIEW_URL, RESUME_DOWNLOAD_URL } from './utils/constant';
 import './styles/animations.css';
 
 const Portfolio = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { scrollProgress, activeSection, showBackToTop } = useScrollTracking(['hero', ...NAV_ITEMS]);
 
   const isMobile = isMobileDevice();
+
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
 
   // Parallax mouse effect
   const handleMouseMove = useCallback(
@@ -51,55 +57,61 @@ const Portfolio = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      {/* Skip to main content link */}
-      <a 
-        href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-cyan-500 focus:text-white focus:rounded-lg focus:font-semibold"
-      >
-        Skip to main content
-      </a>
+    <>
+      {/* Loading Screen */}
+      {isLoading && <LoadingScreen onLoadingComplete={handleLoadingComplete} />}
 
-      {/* Top Progress Bar */}
-      <ScrollProgress progress={scrollProgress} />
+      {/* Main Portfolio Content */}
+      <div className={`min-h-screen transition-colors duration-500 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+        {/* Skip to main content link */}
+        <a 
+          href="#main-content" 
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-cyan-500 focus:text-white focus:rounded-lg focus:font-semibold"
+        >
+          Skip to main content
+        </a>
 
-      {/* Navigation Bar */}
-      <Navigation 
-        darkMode={darkMode} 
-        setDarkMode={setDarkMode} 
-        scrollProgress={scrollProgress} 
-        activeSection={activeSection} 
-      />
+        {/* Top Progress Bar */}
+        <ScrollProgress progress={scrollProgress} />
 
-      {/* Back to Top Button */}
-      <BackToTop show={showBackToTop} darkMode={darkMode} />
+        {/* Navigation Bar */}
+        <Navigation 
+          darkMode={darkMode} 
+          setDarkMode={setDarkMode} 
+          scrollProgress={scrollProgress} 
+          activeSection={activeSection} 
+        />
 
-      {/* Hero Section */}
-      <HeroSection 
-        mousePosition={mousePosition} 
-        scrollToSection={scrollToSection}
-        handleResumeView={handleResumeView}
-        handleResumeDownload={handleResumeDownload}
-      />
+        {/* Back to Top Button */}
+        <BackToTop show={showBackToTop} darkMode={darkMode} />
 
-      {/* Projects Section */}
-      <ProjectsSection />
+        {/* Hero Section */}
+        <HeroSection 
+          mousePosition={mousePosition} 
+          scrollToSection={scrollToSection}
+          handleResumeView={handleResumeView}
+          handleResumeDownload={handleResumeDownload}
+        />
 
-      {/* Achievements Section */}
-      <AchievementsSection />
+        {/* Projects Section */}
+        <ProjectsSection />
 
-      {/* Gallery Section */}
-      <GallerySection />
+        {/* Achievements Section */}
+        <AchievementsSection />
 
-      {/* Skills Section */}
-      <SkillsSection />
+        {/* Gallery Section */}
+        <GallerySection />
 
-      {/* Contact Section */}
-      <ContactSection handleResumeDownload={handleResumeDownload} />
+        {/* Skills Section */}
+        <SkillsSection />
 
-      {/* Footer */}
-      <Footer />
-    </div>
+        {/* Contact Section */}
+        <ContactSection handleResumeDownload={handleResumeDownload} />
+
+        {/* Footer */}
+        <Footer />
+      </div>
+    </>
   );
 };
 
