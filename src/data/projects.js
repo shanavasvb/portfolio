@@ -22,5 +22,13 @@ export const projects = [
     features: "Bilingual support • Real-time sync • Offline mode",
     repo: "https://github.com/shanavasvb/familydirectory",
     live: null
-  }
+  },
+ {
+  title: "Product Details Application",
+  description: "Cross-platform interface for searching, viewing, and managing product information with live barcode lookup support",
+  tech: ["React Native", "REST API", "Firebase", "Material UI"],
+  features: "Real-time lookup • Clean UI • Multi-device support",
+  repo: "https://github.com/AayishaOS/product-details-application",
+  live: null
+}
 ];

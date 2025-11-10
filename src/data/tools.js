@@ -1,5 +1,4 @@
 export const toolIcons = [
-  { href: "https://flutter.dev", src: "https://www.vectorlogo.zone/logos/flutterio/flutterio-icon.svg", alt: "Flutter" },
   { href: "https://developer.apple.com/swift/", src: "https://raw.githubusercontent.com/devicons/devicon/master/icons/swift/swift-original.svg", alt: "Swift" },
   { href: "https://kotlinlang.org", src: "https://www.vectorlogo.zone/logos/kotlinlang/kotlinlang-icon.svg", alt: "Kotlin" },
   { href: "https://developer.android.com", src: "https://raw.githubusercontent.com/devicons/devicon/master/icons/android/android-original-wordmark.svg", alt: "Android" },
