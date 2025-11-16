@@ -1,6 +1,4 @@
-/**
- * Throttle function to limit function calls
- */
+
 export const throttle = (func, delay) => {
   let timeoutId;
   let lastRan;
@@ -20,9 +18,7 @@ export const throttle = (func, delay) => {
   };
 };
 
-/**
- * Check if user prefers reduced motion
- */
+
 export const prefersReducedMotion = () => {
   if (typeof window === 'undefined') return false;
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;

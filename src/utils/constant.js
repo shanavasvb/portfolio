@@ -39,6 +39,6 @@ export const CONTACT_INFO = {
   email: 'shanavasvbasheer@gmail.com',
   phone: '+91 85473 63158',
   location: 'Kochi, Kerala, India',
-  github: 'https://github.com/shanavasvbasheer',
+  github: 'https://github.com/shanavasv',
   linkedin: 'https://linkedin.com/in/shanavasvbasheer'
 };
